@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# rtl
+*.fs
+rtl/mc851.json
+rtl/mc851_pnr.json
