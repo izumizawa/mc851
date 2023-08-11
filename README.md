@@ -1,5 +1,5 @@
 # MC851 - Projeto em Computação I
-
+Implementação de uma CPU reduzida com arquitetura em RISC-V em Verilog 2005.
 
 ## Integrantes
 

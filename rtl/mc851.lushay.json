@@ -1,4 +1,5 @@
 {
     "name": "mc851",
-    "includedFiles": "all"
+    "includedFiles": "all",
+    "board": "tangnano9k"
 }

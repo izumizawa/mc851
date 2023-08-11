@@ -3,5 +3,9 @@
 
 # rtl
 *.fs
+*.dbgmodule
 rtl/mc851.json
 rtl/mc851_pnr.json
+
+# Verilator
+obj_dir/
