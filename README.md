@@ -16,3 +16,14 @@ Após seguir as [instruções de instalação](https://www.ic.unicamp.br/~rodolf
 $ cd ~/eda/oss-cad-suite
 $ ./activate
 ```
+## Testes
+Para implementar testes, utilize o `iverilog` para compilar seus módulos junto com seu _testbench_ e depois o execute-o. O exemplo abaixo mostra um teste da ALU:
+```
+$ iverilog -o ex_tb.vvp ex.v ex_tb.v
+$ vvp ex_tb.vvp
+```
+A saída deve ser:
+```
+alu_1_tb: starting tests
+  test_add: passed!
+```
