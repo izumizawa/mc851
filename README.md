@@ -3,12 +3,12 @@ Implementação de uma CPU reduzida com arquitetura em RISC-V em Verilog 2005.
 
 ## Integrantes
 
+- RA 169374 | Daniel Paulo Garcia
 - RA 182783 | Lucca Costa Piccolotto Jordão
 - RA 185447 | Paulo Barreira Pacitti
+- RA 198435 | Guilherme Tavares Shimamoto
 - RA 216116 | Gabriel Braga Proença
 - RA 221859 | Mariana Megumi Izumizawa
-- RA 169374 | Daniel Paulo Garcia
-- RA 198435 | Guilherme Tavares Shimamoto
 
 ## Instruções para macOS
 Após seguir as [instruções de instalação](https://www.ic.unicamp.br/~rodolfo/Cursos/mc851/2023s2/instalacao/), é necessário ativar as permissões de execução para `oss-cad-suite`. Para isso, basta executar os comando abaixos:
@@ -24,6 +24,10 @@ $ vvp ex_tb.vvp
 ```
 A saída deve ser:
 ```
-alu_1_tb: starting tests
+alu_module_tb: starting tests
   test_add: passed!
+  test_sub: passed!  
+  test_and: passed!
+  test_or: passed!
+  test_xor: passed!
 ```
