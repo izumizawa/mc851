@@ -1,5 +1,5 @@
 
-module ram(clk, address, data_in, mem_write, mem_read, data_out);
+module mem_module(clk, address, data_in, mem_write, mem_read, data_out);
 
 input clk;
 input[31:0] address;
@@ -21,20 +21,10 @@ input[2:0] mem_read;
 
 output reg [31:0] data_out;
 
-// [mem word size] mem [mem size]
-reg [31:0] mem [0:65536];
+always@(posedge clk) begin
 
-initial begin data_out = 32'b0; end
+// Instanciar e utilizar modula da RAM.
 
-always@(posedge clk)
-begin
-if (mem_write != 2'b0 ) begin
-     mem[address] = data_in;
-end
-
-if (mem_read != 3'b0) begin
-    data_out = mem[address];
-    end
 end
 
 endmodule
