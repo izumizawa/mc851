@@ -1,12 +1,6 @@
 // EX: Execution or address calculation stage.
 // modules = ["ALU", "Address Adder"]
-// ARITHMETIC OPS
-`define ALU_ADD     4'b0100
-`define ALU_SUB     4'b0101
-// LOGIC OPS
-`define ALU_AND     4'b0110
-`define ALU_OR      4'b0111
-`define ALU_XOR     4'b1000
+`include "define.v"
 
 
 module alu_module (
@@ -23,27 +17,16 @@ always @ (alu_input_op or alu_input_a or alu_input_b)
 begin
     case (alu_input_op)
     // ARITHMETIC OPS
-        `ALU_ADD :
-            begin
-                alu_register_result <= (alu_input_a + alu_input_b);
-            end
-        `ALU_SUB :
-            begin
-                alu_register_result <= (alu_input_a - alu_input_b);
-            end
+        `ALU_ADD: alu_register_result <= (alu_input_a + alu_input_b);
+        `ALU_SUB: alu_register_result <= (alu_input_a - alu_input_b);
     // LOGIC OPS
-        `ALU_AND :
-            begin
-                alu_register_result <= (alu_input_a && alu_input_b);
-            end
-        `ALU_OR :
-            begin
-                alu_register_result <= (alu_input_a || alu_input_b);
-            end
-        `ALU_XOR :
-            begin
-                alu_register_result <= (alu_input_a ^ alu_input_b);
-            end
+        `ALU_AND: alu_register_result <= (alu_input_a && alu_input_b);
+        `ALU_OR:  alu_register_result <= (alu_input_a || alu_input_b);
+        `ALU_XOR: alu_register_result <= (alu_input_a ^ alu_input_b);
+    // SHIFT OPS
+        `ALU_SLL:  alu_register_result <= alu_input_a << alu_input_b[4:0]; // need to set a range otherwise it will binary extend the number
+        `ALU_SRL:  alu_register_result <= alu_input_a >> alu_input_b[4:0];
+        `ALU_SRA:  alu_register_result <= $signed(alu_input_a) >>> alu_input_b[4:0];
     endcase
 end
 
