@@ -20,8 +20,8 @@ begin
         `ALU_ADD: alu_register_result <= (alu_input_a + alu_input_b);
         `ALU_SUB: alu_register_result <= (alu_input_a - alu_input_b);
     // LOGIC OPS
-        `ALU_AND: alu_register_result <= (alu_input_a && alu_input_b);
-        `ALU_OR:  alu_register_result <= (alu_input_a || alu_input_b);
+        `ALU_AND: alu_register_result <= (alu_input_a & alu_input_b);
+        `ALU_OR:  alu_register_result <= (alu_input_a | alu_input_b);
         `ALU_XOR: alu_register_result <= (alu_input_a ^ alu_input_b);
     // SHIFT OPS
         `ALU_SLL:  alu_register_result <= alu_input_a << alu_input_b[4:0]; // need to set a range otherwise it will binary extend the number

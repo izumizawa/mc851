@@ -19,7 +19,7 @@ module alu_module_tb();
         alu_tb_input_op <= `ALU_ADD;
         #100;
         if (alu_tb_result != 32'h2)
-            $error("alu_tb_result should be 0x0002, but is %h", alu_tb_result);
+            $error("alu_tb_result should be 32'h2, but is %h", alu_tb_result);
         else
             $display("passed!");
     end
@@ -33,7 +33,7 @@ module alu_module_tb();
         alu_tb_input_op <= `ALU_SUB;
         #100;
         if (alu_tb_result != 32'h0)
-            $error("alu_tb_result should be 0x0000, but is %h", alu_tb_result);
+            $error("alu_tb_result should be 32'h0, but is %h", alu_tb_result);
         else
             $display("passed!");
     end
@@ -42,12 +42,12 @@ module alu_module_tb();
     task test_and();
     begin
         $write("  test_and: ");
-        alu_tb_input_a <= 32'h1;
-        alu_tb_input_b <= 32'h1;
+        alu_tb_input_a <= 32'h7;
+        alu_tb_input_b <= 32'h3;
         alu_tb_input_op <= `ALU_AND;
         #100;
-        if (alu_tb_result != 32'h1)
-            $error("alu_tb_result should be 0x0001, but is %h", alu_tb_result);
+        if (alu_tb_result != 32'h3)
+            $error("alu_tb_result should be 32'h3, but is %h", alu_tb_result);
         else
             $display("passed!");
     end
@@ -56,12 +56,12 @@ module alu_module_tb();
     task test_or();
     begin
         $write("  test_or: ");
-        alu_tb_input_a <= 32'h0;
-        alu_tb_input_b <= 32'h1;
+        alu_tb_input_a <= 32'h4;
+        alu_tb_input_b <= 32'h3;
         alu_tb_input_op <= `ALU_OR;
         #100;
-        if (alu_tb_result != 32'h1)
-            $error("alu_tb_result should be 0x0001, but is %h", alu_tb_result);
+        if (alu_tb_result != 32'h7)
+            $error("alu_tb_result should be 32'h7, but is %h", alu_tb_result);
         else
             $display("passed!");
     end
@@ -70,12 +70,12 @@ module alu_module_tb();
     task test_xor();
     begin
         $write("  test_xor: ");
-        alu_tb_input_a <= 32'h1;
-        alu_tb_input_b <= 32'h1;
+        alu_tb_input_a <= 32'b1001;
+        alu_tb_input_b <= 32'b1111;
         alu_tb_input_op <= `ALU_XOR;
         #100;
-        if (alu_tb_result != 32'h0)
-            $error("alu_tb_result should be 0x0000, but is %h", alu_tb_result);
+        if (alu_tb_result != 32'b0110)
+            $error("alu_tb_result should be 32'b0111, but is %b", alu_tb_result);
         else
             $display("passed!");
     end
