@@ -1,5 +1,5 @@
 {
     "name": "mc851",
-    "includedFiles": "all",
+    "includedFiles": ["stages/ex.v"],
     "board": "tangnano9k"
 }
