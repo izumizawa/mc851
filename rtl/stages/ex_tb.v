@@ -124,6 +124,34 @@ module alu_module_tb();
     end
     endtask
 
+    task test_slt();
+    begin
+        $write("  test_slt: ");
+        alu_tb_input_a <= 32'h4;
+        alu_tb_input_b <= 32'h5;
+        alu_tb_input_op <= `ALU_SLT;
+        #100;
+        if (alu_tb_result != 32'h1)
+            $error("alu_tb_result should be 32'h1, but is %h", alu_tb_result);
+        else
+            $display("passed!");
+    end
+    endtask
+
+    task test_sltu();
+    begin
+        $write("  test_slt: ");
+        alu_tb_input_a <= -32'h4;
+        alu_tb_input_b <= 32'h5;
+        alu_tb_input_op <= `ALU_SLTU;
+        #100;
+        if (alu_tb_result != 32'h1)
+            $error("alu_tb_result should be 32'h1, but is %h", alu_tb_result);
+        else
+            $display("passed!");
+    end
+    endtask
+
     initial begin
         $display("alu_module_tb: starting tests");
         test_add();
@@ -134,5 +162,7 @@ module alu_module_tb();
         test_sll();
         test_srl();
         test_sra();
+        test_slt();
+        test_sltu();
     end
 endmodule

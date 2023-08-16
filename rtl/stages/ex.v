@@ -27,6 +27,9 @@ begin
         `ALU_SLL:  alu_register_result <= alu_input_a << alu_input_b[4:0]; // need to set a range otherwise it will binary extend the number
         `ALU_SRL:  alu_register_result <= alu_input_a >> alu_input_b[4:0];
         `ALU_SRA:  alu_register_result <= $signed(alu_input_a) >>> alu_input_b[4:0];
+    // COMPARE OPS
+        `ALU_SLT:  alu_register_result <= (alu_input_a < alu_input_b ? 1 : 0);
+        `ALU_SLTU:  alu_register_result <= ($signed(alu_input_a) < $signed(alu_input_b) ? 1 : 0);
     endcase
 end
 
