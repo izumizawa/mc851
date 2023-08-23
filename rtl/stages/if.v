@@ -4,7 +4,7 @@
 module PC(nextInstruction, currentInstruction, reset, clock, load);
 	input reset, clock, load;
     input [31:0] nextInstruction;
-	output reg [31:0]  currentInstruction;
+	output reg [31:0] currentInstruction;
 
     always @(posedge clock) 
     begin
@@ -20,3 +20,16 @@ module PC(nextInstruction, currentInstruction, reset, clock, load);
 			end
     	end
     end
+endmodule
+
+module InstructionMemory(address, instruction, mem);
+ 	input [31:0] address;
+	input [31:0] mem;
+	output reg [31:0] instruction;
+
+ 	always @(*) 
+ 	begin
+ 		instruction = mem;
+		// TODO: mem[address];
+ 	end
+endmodule
