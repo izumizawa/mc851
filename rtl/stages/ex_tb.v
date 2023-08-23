@@ -1,10 +1,13 @@
 module alu_module_tb();
-    reg [3:0] alu_tb_input_op;
-    reg [31:0] alu_tb_input_a;
-    reg [31:0] alu_tb_input_b; 
-    wire [31:0] alu_tb_result;
+    reg          alu_tb_input_enable;
+    reg  [3:0]   alu_tb_input_op;
+    reg  [31:0]  alu_tb_input_a;
+    reg  [31:0]  alu_tb_input_b;
+    wire [31:0]  alu_tb_result;
+
 
     alu_module uut(
+        .alu_input_enable(alu_tb_input_enable),
         .alu_input_op(alu_tb_input_op),
         .alu_input_a(alu_tb_input_a),
         .alu_input_b(alu_tb_input_b),
@@ -14,6 +17,7 @@ module alu_module_tb();
     task test_add();
     begin
         $write("  test_add: ");
+        alu_tb_input_enable = 1'b1;
         alu_tb_input_a <= 32'h1;
         alu_tb_input_b <= 32'h1;
         alu_tb_input_op <= `ALU_ADD;
@@ -25,9 +29,25 @@ module alu_module_tb();
     end
     endtask
 
+    task test_enable();
+    begin
+        $write("  test_enable: ");
+        alu_tb_input_enable = 1'b0;
+        alu_tb_input_a <= 32'h2;
+        alu_tb_input_b <= 32'h2;
+        alu_tb_input_op <= `ALU_ADD;
+        #100;
+        if (alu_tb_result != 32'h0)
+            $error("alu_tb_result should be 32'h0, but is %h", alu_tb_result);
+        else
+            $display("passed!");
+    end
+    endtask
+
     task test_sub();
     begin
         $write("  test_sub: ");
+        alu_tb_input_enable = 1'b1;
         alu_tb_input_a <= 32'h1;
         alu_tb_input_b <= 32'h1;
         alu_tb_input_op <= `ALU_SUB;
@@ -154,7 +174,9 @@ module alu_module_tb();
 
     initial begin
         $display("alu_module_tb: starting tests");
+        alu_tb_input_enable = 1'b1;
         test_add();
+        test_enable();
         test_sub();
         test_and();
         test_or();
