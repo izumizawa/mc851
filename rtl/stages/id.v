@@ -27,5 +27,33 @@ module RegisterFile (
             registers[write_reg] <= write_data;
         end
     end
+endmodule
+
+module Decoder (
+    input wire [31:0] instruction, 
+);
+    reg [6:0] opcode;
+    reg [4:0] rd;
+    reg [2:0] funct3;
+    reg [4:0] rs1;
+    reg [4:0] rs2;
+    reg [6:0] funct7;
+
+    // Read registers
+    assign rs1 = instruction[19:15];
+    assign rs2 = instruction[24:20];
+
+    // Write register
+    assign rd = instruction[11:7];
+
+    // Instruction decode
+    assign opcode = instruction[6:0];
+    assign funct7 = instruction[31:25];
+    assign funct3 = instruction[14:12];
+
+    always @(*) begin 
+        case (opcode) 
+            
+    end
 
 endmodule
