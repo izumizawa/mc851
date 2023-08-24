@@ -1,39 +1,32 @@
+/* // ! ATENÇÃO
+ * No futuro, esse módulo de memória SRAM será o "data memory" / "L1d cache".
+ * Quando um dado não estiver na cache, buscar na SDRAM (64Mb). Isso requer
+ * interagir com um controlador especial built-in do FPGA. O sinal read_enable
+ * ainda vai fazer sentido.
+ */
 
-module ram (
-input clk,
-input[31:0] address,
-input[31:0] data_in,
-
-// 00 = not write
-// 01 = write one byte
-// 10 = write half word
-// 11 = write word
-input[1:0] mem_write,
-
-// 000 = not read
-// 001 = read one byte
-// 010 = read byte unsigned
-// 011 = read half word
-// 100 = read half word unsigned
-// 101 = read word
-input[2:0] mem_read,
-
-output reg [31:0] data_out
+module ram #(
+    parameter MEMORY_SIZE = 1024  // 1 KiB
+) (
+    input clk,
+    input read_enable,
+    input [ 3:0] write_enable,
+    input [31:0] address,
+    input [31:0] data_in,
+    output reg  [31:0] data_out
 );
+    localparam WORD_WIDTH = 32;
+    localparam NUM_WORDS = MEMORY_SIZE / WORD_WIDTH;
 
-// [mem word size] mem [mem size]
-// 1024(2^10) values of 32 bits
-reg [31:0] mem [0:1023];
+    reg [WORD_WIDTH-1:0] mem [0:NUM_WORDS-1];
 
-always @(posedge clk) begin
+    always @(posedge clk) begin
+        if (read_enable) data_out <= mem[address];
 
-if (mem_write != 2'b0 ) begin
-     mem[address] <= data_in;
-end
-
-if (mem_read != 3'b0) begin
-    data_out <= mem[address];
+        if (write_enable[0]) mem[address][ 7: 0] <= data_in[ 7: 0];
+		if (write_enable[1]) mem[address][15: 8] <= data_in[15: 8];
+		if (write_enable[2]) mem[address][23:16] <= data_in[23:16];
+		if (write_enable[3]) mem[address][31:24] <= data_in[31:24];
     end
-end
 
 endmodule
