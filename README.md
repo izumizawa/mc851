@@ -10,6 +10,9 @@ Implementação de uma CPU reduzida com arquitetura em RISC-V em Verilog 2005.
 - RA 216116 | Gabriel Braga Proença
 - RA 221859 | Mariana Megumi Izumizawa
 
+## Entregas
+As entregas requeridas pelo programa da disciplina estão na pasta `docs`, os relatórios e slides.
+
 ## Instruções para macOS
 Após seguir as [instruções de instalação](https://www.ic.unicamp.br/~rodolfo/Cursos/mc851/2023s2/instalacao/), é necessário ativar as permissões de execução para `oss-cad-suite`. Para isso, basta executar os comando abaixos:
 ```bash
