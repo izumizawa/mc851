@@ -1,3 +1,9 @@
+`ifndef _define_v_
+
+// -------------------------- Pipeline Control signals
+`define ALU_SRC_FROM_REG 1'b0
+`define ALU_SRC_FROM_IMM 1'b1
+
 // ALU_op: ALU operation
 //--------------------------- ARITHMETIC
 `define ALU_ADD     4'b0000
@@ -13,3 +19,7 @@
 // -------------------------- COMPARE
 `define ALU_SLT     4'b1000
 `define ALU_SLTU    4'b1001
+// -------------------------- NOP
+`define ALU_NOP     4'b1111
+
+`endif
