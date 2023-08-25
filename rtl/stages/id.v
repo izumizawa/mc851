@@ -31,61 +31,59 @@ module RegisterFile (
 endmodule
 
 module Decoder (
-    input wire [31:0] instruction, 
+    input wire [31:0] instruction,
+    output reg [4:0] read_reg1,
+    output reg [4:0] read_reg2,
+    output reg [4:0] write_reg,
+    output reg [3:0] alu_input_op;
 );
     reg [6:0] opcode;
     reg [2:0] funct3;
     reg [6:0] funct7;
-
-    output reg [4:0] read_reg1;
-    output reg [4:0] read_reg2;
-    output reg [4:0] write_reg;
     
     // Read registers
-    assign read_reg1 = instruction[19:15];
-    assign read_reg2 = instruction[24:20];
+    assign read_reg1 <= instruction[19:15];
+    assign read_reg2 <= instruction[24:20];
 
     // Write register
-    assign write_reg = instruction[11:7];
+    assign write_reg <= instruction[11:7];
 
     // Instruction decode
-    assign opcode = instruction[6:0];
-    assign funct7 = instruction[31:25];
-    assign funct3 = instruction[14:12];
-
-    output reg [3:0] alu_input_op;
+    assign opcode <= instruction[6:0];
+    assign funct7 <= instruction[31:25];
+    assign funct3 <= instruction[14:12];
 
     always @(*) begin 
         case (opcode) 
             // R-type instructions
             7'b0110011: begin 
-                write_enable = 1;
-                alu_input_enable = 1;
+                write_enable <= 1;
+                alu_input_enable <= 1;
 
                 if (funct3 == 3'b000) begin 
                     if (funct7 == 7'b0000000) begin 
-                        alu_input_op = `ALU_ADD;
+                        alu_input_op <= `ALU_ADD;
                     end else begin 
-                        alu_input_op = `ALU_SUB;
+                        alu_input_op <= `ALU_SUB;
                     end 
                 end else if (funct3 == 3'b001) begin
-                    alu_input_op = `ALU_SLL; 
+                    alu_input_op <= `ALU_SLL; 
                 end else if (funct3 == 3'b010) begin 
-                    alu_input_op = `ALU_SLT;
+                    alu_input_op <= `ALU_SLT;
                 end else if (funct3 == 3'b011) begin
-                    alu_input_op = `ALU_SLTU;
+                    alu_input_op <= `ALU_SLTU;
                 end else if (funct3 == 3'b100) begin 
-                    alu_input_op = `ALU_XOR;
+                    alu_input_op <= `ALU_XOR;
                 end else if (funct3 == 3'b101) begin
                     if (funct7 == 7'b0000000) begin
-                        alu_input_op = `ALU_SRL;
+                        alu_input_op <= `ALU_SRL;
                     end else begin 
-                        alu_input_op = `ALU_SRA;
+                        alu_input_op <= `ALU_SRA;
                     end 
                 end else if (funct3 == 3'b110) begin
-                    alu_input_op = `ALU_OR;
+                    alu_input_op <= `ALU_OR;
                 end else if (funct3 == 3'b111) begin 
-                    alu_input_op = `ALU_AND;
+                    alu_input_op <= `ALU_AND;
                 end
             end
         endcase
