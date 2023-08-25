@@ -24,7 +24,9 @@ module RegisterFile (
         if (!reset) begin
             registers[0] <= 32'b0;
         end else if (write_enable) begin
-            registers[write_reg] <= write_data;
+            if (write_reg != 5'b00000) begin
+                registers[write_reg] <= write_data;
+            end
         end
     end
 
