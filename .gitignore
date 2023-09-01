@@ -10,3 +10,7 @@ rtl/mc851_pnr.json
 # Verilog
 *.vvp
 *.vcd
+*.o
+
+# node
+*node_modules
