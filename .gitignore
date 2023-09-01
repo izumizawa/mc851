@@ -6,6 +6,10 @@
 *.dbgmodule
 rtl/mc851.json
 rtl/mc851_pnr.json
+demo/uart/uart.json
+demo/uart/uart_pnr.json
+demo/uart/package.json
+demo/uart/package-lock.json
 
 # Verilog
 *.vvp
