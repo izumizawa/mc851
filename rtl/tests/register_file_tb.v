@@ -1,16 +1,14 @@
-module RegisterFile_Testbench;
+module register_file_tb;
 
-    reg clock;
-    reg reset;
+    reg clk;
     reg [4:0] read_reg1, read_reg2, write_reg;
     reg write_enable;
     reg [31:0] write_data;
     wire [31:0] read_data1, read_data2;
 
     // Instanciar o módulo RegisterFile
-    RegisterFile dut (
-        .clock(clock),
-        .reset(reset),
+    register_file dut (
+        .clk(clk),
         .read_reg1(read_reg1),
         .read_reg2(read_reg2),
         .write_reg(write_reg),
@@ -22,17 +20,14 @@ module RegisterFile_Testbench;
 
     always#(5)
     begin
-        clock = ~clock;
+        clk = ~clk;
     end
 
     // Estímulos (inputs) para o módulo
     task Teste(); 
     begin
-        clock = 0;
-        reset = 0; // Ativa o reset
+        clk = 0;
         #10;
-        reset = 1; // Desativa o reset
-
         // Teste 1 - Escrita e leitura básica
         write_enable = 1;
         write_reg = 5'b00001;
