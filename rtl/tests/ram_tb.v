@@ -19,7 +19,7 @@ module ram_component_tb();
 
     initial begin
         clk = 0;
-        forever #1 clk = ~clk;
+        forever #2 clk = ~clk;
     end
 
     task test_write_and_read();
