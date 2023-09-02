@@ -1,5 +1,10 @@
 {
     "name": "mc851",
-    "includedFiles": ["stages/ex.v"],
-    "board": "tangnano9k"
+    "includedFiles": [
+        "soc.v",
+        "cpu.v"
+    ],
+    "board": "tangnano9k",
+    "constraintsFile": "tangnano9k.cst",
+    "top": "soc"
 }
