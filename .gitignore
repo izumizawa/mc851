@@ -10,3 +10,6 @@ rtl/mc851_pnr.json
 # Verilog
 *.vvp
 *.vcd
+
+# object files
+*.o
