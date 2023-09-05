@@ -6,6 +6,8 @@ Esta é a implementação de um módulo UART seguindo o tutorial [Debugging da L
 
 UART significa "universal asynchronous receiver/transmitter", ou seja, transmissor/receptor assíncrono universal. Define um protocolo para a troca de dados seriais entre dois dispositivos.
 
+![Protocolo UART](/demo/uart/UART.drawio.png)
+
 Como é assíncrono, não tem um sinal de clock para sincronia dos dois lados, eles precisam escolher com antecedência qual a frequência ou "baud rate" (quantidade de bits por segundo) e então cada lado gerencia o próprio clock para a frequência desejada.
 
 
