@@ -42,3 +42,28 @@ Para executar os arquivos da pasta scripts será necessária a instalação da b
 ```
 npm i serialport
 ```
+
+### Executando os scripts de serialport
+
+O primeiro arquivo para ser executado é o `list-devices.js`, que é responsável por listar todas as Serial Ports. Para isso, basta executar dentro da pasta `scripts` o seguinte comando:
+
+```
+node list-devices.js
+```
+
+Para prosseguir é necessário copiar o valor do path: `/dev/tty.usbserial-...1`, como na seguinte imagem:
+
+<img width="278" alt="Screenshot 2023-09-05 at 20 10 31" src="https://github.com/izumizawa/mc851/assets/25368628/1627518a-953a-4839-bf7c-d24636d682ad">
+
+Em sequência, o path copiado deve ser colocado no arquivo `serial-program.js`, no seguinte trecho de código:
+
+<img width="288" alt="Screenshot 2023-09-05 at 20 15 56" src="https://github.com/izumizawa/mc851/assets/25368628/136743e7-3846-4c81-8b6b-daf976432e6c">
+
+
+Por fim, com o path configurado, basta executar o seguinte comando:
+
+```
+node serial-program.js
+```
+
+Com a execução desse programa, toda vez que o computador receber informações da placa, a informação é exibida no terminal. Além disso, para cada informação recebida, o script envia para a placa um valor de "contador" para ser exibido nos LEDs. Logo, para a placa enviar dados para o computador, basta pressionar o botão na placa.
