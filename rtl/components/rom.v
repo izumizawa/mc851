@@ -1,3 +1,4 @@
+// TODO: implementar teste da ROM
 module rom #(
     parameter ADDR_WIDTH = 8,  // 256×4B = 1 KiB
     parameter ROMFILE="test.mem"

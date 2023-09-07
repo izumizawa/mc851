@@ -1,7 +1,11 @@
+// TODO: implementar comportamento do reset
+
 `include "components/ram.v"
 `include "components/rom.v"
 
-module mmu (
+module mmu #(
+    parameter ROMFILE="test.mem"
+) (
     input clk, reset,
     input write_enable,
     input read_enable,
@@ -34,7 +38,10 @@ module mmu (
     reg  [ROM_ADDR_WIDTH-1:0] rom_address;
     wire [31:0] rom_data_out;
 
-    rom #( .ADDR_WIDTH(ROM_ADDR_WIDTH) ) rom_inst (
+    rom #( 
+        .ADDR_WIDTH(ROM_ADDR_WIDTH),
+        .ROMFILE(ROMFILE) 
+    ) rom_inst (
         .clk            (clk            ),
         .read_enable    (rom_read_enable),
         .address        (rom_address    ),
@@ -50,7 +57,7 @@ module mmu (
     reg ram_write_enable;
     reg ram_read_enable;
     reg  [RAM_ADDR_WIDTH-1:0] ram_address;
-    reg  [31:0] ram_data_in;
+    wire  [31:0] ram_data_in;
     wire [31:0] ram_data_out;
 
     ram #( .ADDR_WIDTH(RAM_ADDR_WIDTH) ) ram (
@@ -68,11 +75,11 @@ module mmu (
     reg [31:0] address_aux;     // Endereço de um único acesso de memória
     reg read_enable_aux;        // Habilita leitura em um único dispositivo
     reg write_enable_aux;       // Habilita escrita em um único dispositivo
-    reg [ 1:0] byte_offset;     // Offset do byte dentro da word
+    wire [ 1:0] byte_offset;     // Offset do byte dentro da word
     reg [31:0] mem_read1;
     reg [31:0] mem_read2;       // Segundo valor lido da memória (apenas acessos de memória desalinhados)
     reg [31:0] mem_read_unsigned;
-    reg aligned_access;
+    wire aligned_access;
 
     assign byte_offset = address[1:0];
     assign aligned_access = (byte_offset + mem_data_width < 4) ? 1 : 0;
@@ -245,7 +252,7 @@ module mmu (
                 current_state <= STATE_IDLE;
             end
 
-            // TODO: Terminar de implementar escrita desalinhada à memória
+            // TODO: Terminar de implementar escrita desalinhada à memória (não requerido para o propósito do trabalho)
             STATE_UNALIGNED_WRITE1: begin
                 // Lê primeira
                 read_enable_aux <= 1;
@@ -270,6 +277,7 @@ module mmu (
             default: begin
                 current_state <= STATE_IDLE;
             end
+            // end TODO
 
         endcase
     end
