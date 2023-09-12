@@ -94,12 +94,11 @@ module cpu (
        
     always @(posedge clk) begin
         // R-type
-        opcode = ifid_ir[6:0];
-        funct7 = ifid_ir[31:25];
-        funct3 = ifid_ir[14:12];
+        opcode <= ifid_ir[6:0];
+        funct7 <= ifid_ir[31:25];
+        funct3 <= ifid_ir[14:12];
         // I-type
-        imm = ifid_ir[31:20];
-
+        imm <= ifid_ir[31:20];
 
         idex_rs1 <= ifid_ir[19:15];
         idex_rs2 <= ifid_ir[24:20];
@@ -154,6 +153,29 @@ module cpu (
                 if (funct3 == 0) begin
                     idex_alu_op <= `ALU_ADD;
                 end
+            end
+
+            // B-type instructions
+            7'b1100011: begin
+                imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
+                idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
+                idex_branch <= 1;
+
+                if (funct3 == 3'b000) begin // BEQ
+                    idex_alu_op <= `ALU_SUB;
+
+                end else if (funct3 == 3'b101) begin //BGE
+                // TODO: BGE
+                end else if (funct3 == 3'b111) begin //BGEU
+                // TODO: BGEU
+                end else if (funct3 == 3'b100) begin //BLT
+                // TODO: BLT
+                end else if (funct3 == 3'b110) begin //BLTU
+                // TODO: BLTU
+                end else if (funct3 == 3'b001) begin //BNE
+                // TODO: BNE
+                end
+
             end
         endcase
     end
