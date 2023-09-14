@@ -35,7 +35,7 @@ module mmu_tb();
 
     task test_rom_read();
     begin
-        $write("  test_rom_read: ");
+        $write("  test_rom_read:");
         clk = 0;
         reset = 0;
         write_enable = 0;
@@ -58,7 +58,7 @@ module mmu_tb();
         #100;
         if (data_out == 32'h00200293) // valor guardado em "src/memdump/test.mem"
         begin
-            $display("    passed!");
+            $display(" passed!");
         end
         else
             $error("    data_out should be 32'h00200293, but is %h", data_out);
@@ -67,14 +67,14 @@ module mmu_tb();
 
     task test_ram_read_and_write();
     begin
-        $write("  test_ram_read_and_write: ");
+        $write("  test_ram_read_and_write:");
         clk = 0;
         reset = 0;
         write_enable = 1;
         read_enable = 0;
         mem_signed_read = 0;
         mem_data_width = `MMU_WIDTH_WORD;
-        address = 1024; // First address of RAM
+        address = 32'h01000000; // First address of RAM
         data_in = 32'hBABABABA;
 
         #100;
@@ -84,8 +84,7 @@ module mmu_tb();
         #100;
         if (data_out == 32'hBABABABA) // valor guardado em "src/memdump/test.mem"
         begin
-            $display("%h", data_out);
-            $display("    passed!");
+            $display(" passed!");
         end
         else
             $error("    data_out should be 32'hBABABABA, but is %h", data_out);
