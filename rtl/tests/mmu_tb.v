@@ -45,23 +45,15 @@ module mmu_tb();
         address = 0;
         data_in = 0;
 
-        // TODO: perguntar para o professor qual o tempo de espera para a memória estar pronta
-        // read_enable = 1;
-        // #1;
-        // read_enable = 0;
-        // while(mem_ready !== 1)
-        // begin
-        //     #1;
-        //     $display("%h", mem_ready);
-        // end
+        // Esperar mmu sinalizar que está pronta
+        while(mem_ready !== 1) #2;
 
-        #100;
-        if (data_out == 32'h00200293) // valor guardado em "src/memdump/test.mem"
-        begin
+        if (data_out == 32'h00200293)
             $display(" passed!");
-        end
         else
             $error("    data_out should be 32'h00200293, but is %h", data_out);
+
+        #8;
     end
     endtask
 
@@ -75,19 +67,23 @@ module mmu_tb();
         mem_signed_read = 0;
         mem_data_width = `MMU_WIDTH_WORD;
         address = 32'h01000000; // First address of RAM
-        data_in = 32'hBABABABA;
+        data_in = 32'h69BABACA;
 
-        #100;
+        while(mem_ready !== 1) #2;
+        #2; // TODO: Commitar em memória 1 ciclo de clock antes
+
         write_enable = 0;
         read_enable = 1;
 
-        #100;
-        if (data_out == 32'hBABABABA) // valor guardado em "src/memdump/test.mem"
-        begin
+        while(mem_ready !== 1) #2;
+
+        if (data_out == 32'h69BABACA)
             $display(" passed!");
-        end
         else
-            $error("    data_out should be 32'hBABABABA, but is %h", data_out);
+            $error("    data_out should be 32'h69BABACA, but is %h", data_out);
+
+        read_enable = 0;
+        #8;
     end
     endtask
 
