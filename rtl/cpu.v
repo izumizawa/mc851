@@ -11,8 +11,8 @@ module cpu (
     // ID/EX Register
     reg [31:0] idex_pc;
     // ... sinais de controle
+    reg [2:0] idex_branch_op;
     reg idex_reg_write;
-    reg idex_branch;
     reg idex_mem_read;
     reg idex_mem_write;
     reg idex_mem_to_reg;
@@ -27,18 +27,20 @@ module cpu (
 	reg [12:0] idex_imm;
 
     // EX/MEM Register
+    reg [31:0] exmem_pc;
+    // ... sinais de controle
+    reg [2:0] exmem_branch_op;
     reg exmem_mem_to_reg;
     reg exmem_reg_write;
-    reg exmem_branch;
     reg exmem_mem_read;
     reg exmem_mem_write;
-    reg [31:0] exmem_branch_target;
     /* //TODO: Substituir isso aqui pelos nomes explícitos das flags conforme
      * //TODO: for necessário (ex.: zero, negative, overflow, carry) */
     reg [ 3:0] exmem_flags;
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
     reg [ 4:0] exmem_rd;
+    reg [12:0] exmem_imm;
 
     // MEM/WB Register
     reg [31:0] memwb_mem_data_read;
@@ -64,7 +66,18 @@ module cpu (
     reg [31:0] pc;
 
     always @(posedge clk) begin
-        ;
+        // Se a instrucao no EX for um branch
+        // Atualizando valor do PC
+        if exmem_branch_op == `BRANCH_BEQ begin
+            if exmem_alu_out == 32'b0 begin
+                pc <= exmem_pc + exmem_imm;
+                // Resetar os sinais de pipeline anteriores
+            end else begin
+                pc <= idex_pc + 4;
+            end
+        end
+
+        ifid_pc <= pc;
     end
     // -------------------------------------------------------------------------
 
@@ -91,8 +104,10 @@ module cpu (
         .read_data1(read_data_1),
         .read_data2(read_data_2)
     );
-       
+
     always @(posedge clk) begin
+        idex_pc <= ifid_pc;
+
         // R-type
         opcode <= ifid_ir[6:0];
         funct7 <= ifid_ir[31:25];
@@ -107,9 +122,9 @@ module cpu (
         
         idex_mem_to_reg <= 0;
         idex_reg_write <= 0;
-        idex_branch <= 0;
         idex_mem_read <= 0;
         idex_mem_write <= 0;
+        idex_branch_op <= `BRANCH_NOT;
 
         idex_data_read_1 <= read_data_1;
         idex_data_read_2 <= read_data_2;
@@ -159,10 +174,12 @@ module cpu (
             7'b1100011: begin
                 imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
                 idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
-                idex_branch <= 1;
 
-                if (funct3 == 3'b000) begin // BEQ
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+
+                if (funct3 == `BRANCH_BEQ) begin // BEQ
                     idex_alu_op <= `ALU_SUB;
+                    idex_branch_op <= `BRANCH_BEQ;
 
                 end else if (funct3 == 3'b101) begin //BGE
                 // TODO: BGE
@@ -199,12 +216,13 @@ module cpu (
     );
 
     always @(posedge clk) begin
-        exmem_branch <= idex_branch;
+        exmem_branch_op <= idex_branch_op;
         exmem_mem_read <= idex_mem_read;
         exmem_mem_to_reg <= idex_mem_to_reg;
         exmem_mem_write <= idex_mem_write;
         exmem_rd <= idex_rd;
         exmem_reg_write <= idex_reg_write;
+        exmem_imm <= idex_imm;
 
         alu_input_a <= idex_data_read_1;
         case(idex_alu_src)

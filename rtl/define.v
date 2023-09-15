@@ -21,5 +21,10 @@
 `define ALU_SLTU    4'b1001
 // -------------------------- NOP
 `define ALU_NOP     4'b1111
+// -------------------------- BRANCH
+`define BRANCH_NOT     3'b010
+`define BRANCH_BEQ     3'b000
+`define BRANCH_BGE     3'b000
+ 
 
 `endif
