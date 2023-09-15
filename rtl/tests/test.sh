@@ -1,7 +1,7 @@
 # Test ALU
 echo "===Testing alu_tb.v========================================================"
-iverilog -o alu_tb.vvp alu_tb.v ../components/alu.v
-vvp alu_tb.vvp
+iverilog -o alu_module_tb.vvp alu_module_tb.v ../components/alu_module.v
+vvp alu_module_tb.vvp
 echo ""
 
 # Test Register File

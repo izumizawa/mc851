@@ -12,7 +12,9 @@ demo/uart/uart_pnr.json
 # Verilog
 *.vvp
 *.vcd
-*.o
 
 # node
 *node_modules
+
+# object files
+*.o

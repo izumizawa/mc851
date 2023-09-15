@@ -1,5 +1,5 @@
 // Top model. Describes the whole CPU and its components.
-`include "../define.v"
+`include "define.v"
 
 module cpu (
     input clk, reset
@@ -47,7 +47,7 @@ module cpu (
     reg memwb_reg_write;
     reg memwb_mem_to_reg;
 
-    wire wb_data; // conectado do mux do WB para escrita no banco de registradores
+    reg [31:0] wb_data; // conectado do mux do WB para escrita no banco de registradores
 
     // Control Unit e Hazard Unit
     reg pc_write;
@@ -76,6 +76,7 @@ module cpu (
     reg [6:0] opcode;
     reg [2:0] funct3;
     reg [6:0] funct7;
+    reg [12:0] imm;
 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
@@ -91,15 +92,19 @@ module cpu (
         .read_data2(read_data_2)
     );
        
-    // Instruction decode
-    assign opcode = ifid_ir[6:0];
-    assign funct7 = ifid_ir[31:25];
-    assign funct3 = ifid_ir[14:12];
-
     always @(posedge clk) begin
+        // R-type
+        opcode = ifid_ir[6:0];
+        funct7 = ifid_ir[31:25];
+        funct3 = ifid_ir[14:12];
+        // I-type
+        imm = ifid_ir[31:20];
+
+
         idex_rs1 <= ifid_ir[19:15];
         idex_rs2 <= ifid_ir[24:20];
         idex_rd <= ifid_ir[11:7];
+        idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
         
         idex_mem_to_reg <= 0;
         idex_reg_write <= 0;
@@ -139,6 +144,15 @@ module cpu (
                     idex_alu_op <= `ALU_OR;
                 end else if (funct3 == 3'b111) begin 
                     idex_alu_op <= `ALU_AND;
+                end
+            end
+
+            // R-type instructions
+            7'b0010011: begin
+                idex_reg_write <=  1; // True
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                if (funct3 == 0) begin
+                    idex_alu_op <= `ALU_ADD;
                 end
             end
         endcase
