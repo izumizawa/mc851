@@ -16,7 +16,10 @@ module rom #(
     end
 
     always @(posedge clk) begin
-        if (read_enable) data_out <= mem[address];
+        if (read_enable)
+            data_out <= mem[address];
+        else
+            data_out <= 0;
     end
 
 endmodule

@@ -13,7 +13,11 @@ module ram #(
     reg [31:0] mem [0:2**ADDR_WIDTH-1];
 
     always @(posedge clk) begin
-        if (read_enable) data_out <= mem[address];
+        if (read_enable)
+            data_out <= mem[address];
+        else
+            data_out <= 0;
+
         if (write_enable) mem[address] <= data_in;
     end
 
