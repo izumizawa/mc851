@@ -6,10 +6,15 @@
 *.dbgmodule
 rtl/mc851.json
 rtl/mc851_pnr.json
+demo/uart/uart.json
+demo/uart/uart_pnr.json
 
 # Verilog
 *.vvp
 *.vcd
+
+# node
+*node_modules
 
 # object files
 *.o
