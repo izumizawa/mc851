@@ -24,7 +24,7 @@ module cpu (
     reg [ 4:0] idex_rs1;
 	reg [ 4:0] idex_rs2;
 	reg [ 4:0] idex_rd;
-	reg [12:0] idex_imm;
+	reg [31:0] idex_imm;
 
     // EX/MEM Register
     reg exmem_mem_to_reg;
@@ -76,8 +76,16 @@ module cpu (
     reg [6:0] opcode;
     reg [2:0] funct3;
     reg [6:0] funct7;
+
     reg [12:0] imm;
 
+    reg [ 4:0] shamt;
+    reg [31:0] shamt_extended;
+
+    reg [ 6:0] s_imm_high;
+    reg [ 4:0] s_imm_low;
+    reg [31:0] s_imm_extended;
+ 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
@@ -94,17 +102,26 @@ module cpu (
        
     always @(posedge clk) begin
         // R-type
-        opcode = ifid_ir[6:0];
-        funct7 = ifid_ir[31:25];
-        funct3 = ifid_ir[14:12];
-        // I-type
-        imm = ifid_ir[31:20];
+        opcode <= ifid_ir[6:0];
+        funct7 <= ifid_ir[31:25];
+        funct3 <= ifid_ir[14:12];
 
+        // I-type
+        i_imm <= ifid_ir[31:20];
+        i_imm_extended <= { {20{i_imm[11]}}, i_imm };
+
+        // shamt for SLLI, SRLI and SRAI
+        shamt <= ifid_ir[24:20];
+        shamt_extended <= {27'b000000000000000000000000000, shamt};
+
+        // S-type
+        s_imm_high <= ifid_ir[31:25];
+        s_imm_low  <= ifid_ir[11:7];
+        s_imm_extended <= { {20{s_imm_high[6]}}, {s_imm_high, s_imm_low} };
 
         idex_rs1 <= ifid_ir[19:15];
         idex_rs2 <= ifid_ir[24:20];
         idex_rd <= ifid_ir[11:7];
-        idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
         
         idex_mem_to_reg <= 0;
         idex_reg_write <= 0;
@@ -147,13 +164,42 @@ module cpu (
                 end
             end
 
-            // R-type instructions
+            // I-type instructions
             7'b0010011: begin
                 idex_reg_write <=  1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
-                if (funct3 == 0) begin
+                idex_imm <= i_imm_extended;
+                if (funct3 == 3'b000) begin
                     idex_alu_op <= `ALU_ADD;
+                end else if (funct3 == 3'b010) begin
+                    idex_alu_op <= `ALU_ADD;
+                end else if (funct3 == 3'b011) begin
+                    idex_alu_op <= `ALU_SLT;
+                end else if (funct3 == 3'b100) begin
+                    idex_alu_op <= `ALU_XOR;
+                end else if (funct3 == 3'b110) begin
+                    idex_alu_op <= `ALU_OR;
+                end else if (funct3 == 3'b111) begin
+                    idex_alu_op <= `ALU_AND;
+                end else if (funct3 == 3'b001) begin
+                    idex_imm <= shamt_extended;
+                    idex_alu_op <= `ALU_SLL; //slli
+                end else if (funct3 == 3'b101) begin
+                    idex_imm <= shamt_extended;
+                    if (funct7 == 7'b0000000) begin
+                        idex_alu_op <= `ALU_SRL; //srli
+                    end else begin
+                        idex_alu_op <= `ALU_SRA; //srai
+                    end
                 end
+            end
+
+            // S-type instructions
+            7'b0100011: begin
+                idex_mem_write <= 1; // True
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= s_imm_extended;
             end
         endcase
     end
