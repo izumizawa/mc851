@@ -79,6 +79,8 @@ module cpu (
 
     reg [12:0] imm;
 
+    reg [31:0] i_imm_extended;
+
     reg [ 4:0] shamt;
     reg [31:0] shamt_extended;
 
