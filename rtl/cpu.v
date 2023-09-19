@@ -24,7 +24,7 @@ module cpu (
     reg [ 4:0] idex_rs1;
 	reg [ 4:0] idex_rs2;
 	reg [ 4:0] idex_rd;
-	reg [12:0] idex_imm;
+	reg [31:0] idex_imm;
 
     // EX/MEM Register
     reg [31:0] exmem_pc;
@@ -40,7 +40,7 @@ module cpu (
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
     reg [ 4:0] exmem_rd;
-    reg [12:0] exmem_imm;
+    reg [31:0] exmem_imm;
 
     // MEM/WB Register
     reg [31:0] memwb_mem_data_read;
@@ -173,7 +173,7 @@ module cpu (
             // B-type instructions
             7'b1100011: begin
                 imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
-                idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
+                idex_imm <= { { 20 { imm[12] } }, imm[11:0] };
 
                 idex_alu_src <= `ALU_SRC_FROM_REG;
 
