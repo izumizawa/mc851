@@ -46,6 +46,7 @@ module mmu_tb();
         data_in = 0;
 
         // Esperar mmu sinalizar que está pronta
+        #1;
         while(mem_ready !== 1) #2;
 
         if (data_out == 32'h00200293)
@@ -54,6 +55,7 @@ module mmu_tb();
             $error("    data_out should be 32'h00200293, but is %h", data_out);
 
         #8;
+        $dumpoff;
     end
     endtask
 
@@ -69,12 +71,13 @@ module mmu_tb();
         address = 32'h01000000; // First address of RAM
         data_in = 32'h69BABACA;
 
+        #1;
         while(mem_ready !== 1) #2;
-        #2; // TODO: Commitar em memória 1 ciclo de clock antes
 
         write_enable = 0;
         read_enable = 1;
 
+        #2;
         while(mem_ready !== 1) #2;
 
         if (data_out == 32'h69BABACA)

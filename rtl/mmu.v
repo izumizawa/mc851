@@ -152,10 +152,9 @@ module mmu #(
     end
 
     localparam STATE_IDLE               = 4'd0;
-    localparam STATE_MEM_READY          = 4'd1;
+    localparam STATE_MEM_WRITE_COMMIT   = 4'd1;
     localparam STATE_ALIGNED_READ       = 4'd2;
-    localparam STATE_ALIGNED_WRITE1     = 4'd3;
-    localparam STATE_ALIGNED_WRITE2     = 4'd4;
+    localparam STATE_ALIGNED_WRITE      = 4'd3;
     localparam STATE_UNALIGNED_READ1    = 4'd5;
     localparam STATE_UNALIGNED_READ2    = 4'd6;
     localparam STATE_UNALIGNED_WRITE1   = 4'd7;
@@ -176,46 +175,50 @@ module mmu #(
         case (current_state)
             STATE_IDLE: begin
                 if (write_enable && aligned_access) begin
-                    current_state <= STATE_ALIGNED_WRITE1;
-                end else if (write_enable && !aligned_access) begin
+                    if (mem_data_width == `MMU_WIDTH_WORD) begin
+                        // Se for escrita de WORD, apenas escrever o data_in
+                        read_enable_aux <= read_enable;
+                        write_enable_aux <= 1;
+                        data_in_aux <= data_in;
+                        current_state <= STATE_MEM_WRITE_COMMIT;
+                    end else begin
+                        // Se for escrita de HALF ou BYTE, primeiro ler a palavra inteira
+                        read_enable_aux <= 1;
+                        write_enable_aux <= 0;
+                        current_state <= STATE_ALIGNED_WRITE;
+                    end
+                end
+
+                else if (write_enable && !aligned_access) begin
                     current_state <= STATE_UNALIGNED_WRITE1;
-                end else if (read_enable && aligned_access) begin
+                end
+
+                else if (read_enable && aligned_access) begin
+                    read_enable_aux <= 1;
+                    write_enable_aux <= 0;
                     current_state <= STATE_ALIGNED_READ;
-                end else if (read_enable && !aligned_access) begin
+                end
+
+                else if (read_enable && !aligned_access) begin
                     current_state <= STATE_UNALIGNED_READ1;
-                end else begin
-                    current_state <= STATE_IDLE; // Continuar ocioso
+                end
+
+                else begin
+                    current_state <= STATE_IDLE;
                 end
             end
 
-            STATE_MEM_READY: begin
+            STATE_MEM_WRITE_COMMIT: begin
                 mem_ready <= 1;
                 current_state <= STATE_IDLE;
             end
 
             STATE_ALIGNED_READ: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                current_state <= STATE_MEM_READY;
+                mem_ready <= 1;
+                current_state <= STATE_IDLE;
             end
 
-            STATE_ALIGNED_WRITE1: begin
-                if (mem_data_width == `MMU_WIDTH_WORD) begin
-                    // Se for escrita de WORD, apenas escrever o data_in
-                    read_enable_aux <= read_enable;
-                    write_enable_aux <= 1;
-                    data_in_aux <= data_in;
-                    current_state <= STATE_MEM_READY;
-                end else begin
-                    // Se for escrita de HALF ou BYTE, primeiro ler a palavra inteira
-                    read_enable_aux <= 1;
-                    write_enable_aux <= 0;
-                    mem_read2 <= data_out_aux;
-                    current_state <= STATE_ALIGNED_WRITE2;
-                end
-            end
-
-            STATE_ALIGNED_WRITE2: begin
+            STATE_ALIGNED_WRITE: begin
                 read_enable_aux <= 0;
                 write_enable_aux <= 1;
 
@@ -246,9 +249,10 @@ module mmu #(
                     end
                 endcase
 
-                current_state <= STATE_MEM_READY;
+                current_state <= STATE_MEM_WRITE_COMMIT;
             end
 
+            // TODO: Terminar de implementar acesso desalinhado à memória (não requerido para o propósito do trabalho)
             STATE_UNALIGNED_READ1: begin
                 read_enable_aux <= 1;
                 write_enable_aux <= 0;
@@ -260,10 +264,9 @@ module mmu #(
             STATE_UNALIGNED_READ2: begin
                 read_enable_aux <= 1;
                 write_enable_aux <= 0;
-                current_state <= STATE_MEM_READY;
+                current_state <= STATE_IDLE;
             end
 
-            // TODO: Terminar de implementar escrita desalinhada à memória (não requerido para o propósito do trabalho)
             STATE_UNALIGNED_WRITE1: begin
                 read_enable_aux <= 1;
                 write_enable_aux <= 0;
@@ -280,7 +283,7 @@ module mmu #(
             end
 
             STATE_UNALIGNED_WRITE4: begin
-                current_state <= STATE_MEM_READY;
+                current_state <= STATE_IDLE;
             end
 
             default: begin
