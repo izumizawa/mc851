@@ -66,16 +66,43 @@ module cpu (
     reg [31:0] pc;
 
     always @(posedge clk) begin
+
         // Se a instrucao no EX for um branch
-        // Atualizando valor do PC
-        if exmem_branch_op == `BRANCH_BEQ begin
-            if exmem_alu_out == 32'b0 begin
-                pc <= exmem_pc + exmem_imm;
-                // Resetar os sinais de pipeline anteriores
-            end else begin
-                pc <= idex_pc + 4;
+        case (exmem_branch_op) 
+            pc <= idex_pc + 4;
+
+            `BRANCH_BEQ: begin
+                if exmem_alu_out == 32'b0 begin
+                    pc <= exmem_pc + exmem_imm;
+
+                    // Reset ID/EX registers
+                    idex_branch_op <= 3'b0
+                    idex_mem_read <= 0
+                    idex_mem_write <= 0
+                    idex_mem_to_reg <= 0
+                    idex_alu_src <= 0
+                    idex_alu_op <= 4'b0
+                    idex_data_read_1 <= 32'b0
+                    idex_data_read_2 <= 32'b0
+                    idex_rs1 <= 5'b0
+                    idex_rs2 <= 5'b0
+                    idex_rd <= 5'b0
+                    idex_imm <= 32'b0
+
+                    // Reset EX/MEM registers
+                    exmem_branch_op <= 3'b0
+                    exmem_mem_to_reg <= 0
+                    exmem_reg_write <= 0
+                    exmem_mem_read <= 0
+                    exmem_mem_write <= 0
+                    exmem_flags <= 4'b0
+                    exmem_data_read_2 <= 32'b0
+                    exmem_rd <= 5'b0
+                    exmem_imm <= 32'b0
+
+                end
             end
-        end
+        endcase
 
         ifid_pc <= pc;
     end
