@@ -77,7 +77,7 @@ module cpu (
     reg [2:0] funct3;
     reg [6:0] funct7;
 
-    reg [12:0] imm;
+    reg [11:0] imm;
 
     reg [31:0] i_imm_extended;
 
