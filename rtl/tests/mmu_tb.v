@@ -4,7 +4,7 @@ module mmu_tb();
 
     // Sinais de teste
     reg clk;
-    reg reset;
+    reg reset_n;
     reg write_enable;
     reg read_enable;
     reg mem_signed_read;
@@ -14,15 +14,16 @@ module mmu_tb();
     wire [31:0] data_out;
     wire mem_ready;
 
-    // Clock will change in every unit
     initial begin
+        $dumpfile("mmu_wave.vcd");
+        $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
     mmu #( .ROMFILE("../../src/memdump/test.mem")) mmu_inst (
         .clk(clk),
-        .reset(reset),
+        .reset_n(reset_n),
         .write_enable(write_enable),
         .read_enable(read_enable),
         .mem_signed_read(mem_signed_read),
@@ -36,8 +37,6 @@ module mmu_tb();
     task test_rom_read();
     begin
         $write("  test_rom_read:");
-        clk = 0;
-        reset = 0;
         write_enable = 0;
         read_enable = 1;
         mem_signed_read = 0;
@@ -45,8 +44,6 @@ module mmu_tb();
         address = 0;
         data_in = 0;
 
-        // Esperar mmu sinalizar que está pronta
-        #1;
         while(mem_ready !== 1) #2;
 
         if (data_out == 32'h00200293)
@@ -54,16 +51,14 @@ module mmu_tb();
         else
             $error("    data_out should be 32'h00200293, but is %h", data_out);
 
+        read_enable = 0;
         #8;
-        $dumpoff;
     end
     endtask
 
     task test_ram_read_and_write();
     begin
         $write("  test_ram_read_and_write:");
-        clk = 0;
-        reset = 0;
         write_enable = 1;
         read_enable = 0;
         mem_signed_read = 0;
@@ -71,7 +66,6 @@ module mmu_tb();
         address = 32'h01000000; // First address of RAM
         data_in = 32'h69BABACA;
 
-        #1;
         while(mem_ready !== 1) #2;
 
         write_enable = 0;
@@ -92,8 +86,15 @@ module mmu_tb();
 
     initial begin
         $display("memory_control_tb: starting tests");
+
+        reset_n = 0;
+        #1;
+        reset_n = 1;
+
         test_ram_read_and_write();
         test_rom_read();
+
+        $dumpoff;
         $finish;
     end
 
