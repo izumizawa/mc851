@@ -19,7 +19,7 @@ module register_file (
     always @(posedge clk) begin
         if (write_enable) begin
             if (write_reg != 0) begin
-                registers[write_reg] = write_data;
+                registers[write_reg] <= write_data;
             end
         end
     end
