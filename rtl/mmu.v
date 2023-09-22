@@ -1,5 +1,3 @@
-// TODO: implementar comportamento do reset
-
 `include "define.v"
 `include "components/ram.v"
 `include "components/rom.v"
@@ -7,7 +5,7 @@
 module mmu #(
     parameter ROMFILE="test.mem"
 ) (
-    input clk, reset,
+    input clk, reset_n,
     input write_enable,
     input read_enable,
     input mem_signed_read,
@@ -165,13 +163,18 @@ module mmu #(
     reg [3:0] current_state = STATE_IDLE;
 
     // Realiza operações de leitura/escrita em múltiplos ciclos
-    always @(posedge clk) begin
+    always @(posedge clk, negedge reset_n) begin
         data_in_aux <= data_in;
+        address_aux <= address;
         read_enable_aux <= 0;
         write_enable_aux <= 0;
-        address_aux <= address;
-
         mem_ready <= 0;
+
+        if (!reset_n) begin
+            mem_read2 <= 0;
+            current_state <= STATE_IDLE;
+        end else begin
+
         case (current_state)
             STATE_IDLE: begin
                 if (write_enable && aligned_access) begin
@@ -204,6 +207,7 @@ module mmu #(
                 end
 
                 else begin
+                    // mem_ready <= 1; // TODO: Descomentar para mem_ready ficar continuamente ligado enquanto a mmu está disponível
                     current_state <= STATE_IDLE;
                 end
             end
@@ -292,6 +296,8 @@ module mmu #(
             // end TODO
 
         endcase
+
+        end
     end
 
 endmodule
