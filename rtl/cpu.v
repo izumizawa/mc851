@@ -69,8 +69,9 @@ module cpu (
 
         // Se a instrucao no EX for um branch
         case (exmem_branch_op) 
-            pc <= idex_pc + 4;
-
+            `BRANCH_NOT: begin
+                pc <= idex_pc + 4;
+            end
             `BRANCH_BEQ: begin
                 if exmem_alu_out == 32'b0 begin
                     pc <= exmem_pc + exmem_imm;
@@ -99,7 +100,8 @@ module cpu (
                     exmem_data_read_2 <= 32'b0
                     exmem_rd <= 5'b0
                     exmem_imm <= 32'b0
-
+                end else begin
+                    pc <= idex_pc + 4;
                 end
             end
         endcase
