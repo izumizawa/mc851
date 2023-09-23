@@ -2,7 +2,16 @@
 `include "define.v"
 
 module cpu (
-    input clk, reset
+    input         clk,
+    input         reset,
+    input         mmu_mem_ready,
+    input [31:0]  mmu_data_out,
+    output        mmu_write_enable,
+    output        mmu_read_enable,
+    output        mmu_mem_signed_read,
+    output [ 1:0] mmu_mem_data_width,
+    output [31:0] mmu_address,
+    output [31:0] mmu_data_in,
 );
     // IF/ID Register
     reg [31:0] ifid_pc;

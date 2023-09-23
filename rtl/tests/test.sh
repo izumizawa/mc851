@@ -15,3 +15,9 @@ echo "===Testing register_file_tb.v=============================================
 iverilog -o register_file.vvp register_file_tb.v ../components/register_file.v
 vvp register_file.vvp
 echo ""
+
+# Test SOC
+echo "===Testing soc_tb.v=============================================="
+iverilog -o soc.vvp soc_tb.v ../soc.v
+vvp soc.vvp
+echo ""
