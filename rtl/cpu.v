@@ -71,11 +71,11 @@ module cpu (
     always @(posedge clk) begin
 
         case (exmem_branch_op) 
-            `BRANCH_NOT: begin
+            `NOT_BRANCH: begin
                 pc <= pc + 4;
             end
             `BRANCH_BEQ: begin
-                if exmem_alu_out == 32'b0 begin
+                if (exmem_alu_out == 32'b0) begin
                     pc <= exmem_branch_target;
                     idex_reset <= 1;
                     exmem_reset <= 1;
@@ -153,7 +153,7 @@ module cpu (
             idex_reg_write <= 0;
             idex_mem_read <= 0;
             idex_mem_write <= 0;
-            idex_branch_op <= `BRANCH_NOT;
+            idex_branch_op <= `NOT_BRANCH;
 
             idex_data_read_1 <= read_data_1;
             idex_data_read_2 <= read_data_2;
@@ -244,7 +244,7 @@ module cpu (
     );
 
     always @(posedge clk) begin
-        if exmem_reset begin
+        if (exmem_reset) begin
             // Reset EX/MEM registers
             exmem_branch_op <= 3'b0;
             exmem_mem_to_reg <= 0;
