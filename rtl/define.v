@@ -1,5 +1,9 @@
 `ifndef _define_v_
 
+// -------------------------- MMU definitions
+`define MMU_WIDTH_BYTE 2'b00
+`define MMU_WIDTH_HALF 2'b01
+`define MMU_WIDTH_WORD 2'b11
 // -------------------------- Pipeline Control signals
 `define ALU_SRC_FROM_REG 1'b0
 `define ALU_SRC_FROM_IMM 1'b1
