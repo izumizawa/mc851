@@ -25,7 +25,7 @@
 // -------------------------- BRANCH
 `define BRANCH_BEQ      3'b000
 `define BRANCH_BNE      3'b001
-`define BRANCH_NOT      3'b010
+`define NOT_BRANCH      3'b010
 `define BRANCH_BLT      3'b100
 `define BRANCH_BGE      3'b101
 `define BRANCH_BLTU     3'b110

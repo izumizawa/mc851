@@ -11,6 +11,7 @@ module cpu (
     // ID/EX Register
     reg [31:0] idex_pc;
     // ... sinais de controle
+    reg idex_reset;
     reg [2:0] idex_branch_op;
     reg idex_reg_write;
     reg idex_mem_read;
@@ -29,11 +30,13 @@ module cpu (
     // EX/MEM Register
     reg [31:0] exmem_pc;
     // ... sinais de controle
+    reg exmem_reset;
     reg [2:0] exmem_branch_op;
     reg exmem_mem_to_reg;
     reg exmem_reg_write;
     reg exmem_mem_read;
     reg exmem_mem_write;
+    reg [31:0] exmem_branch_target;
     /* //TODO: Substituir isso aqui pelos nomes explícitos das flags conforme
      * //TODO: for necessário (ex.: zero, negative, overflow, carry) */
     reg [ 3:0] exmem_flags;
@@ -67,46 +70,22 @@ module cpu (
 
     always @(posedge clk) begin
 
-        // Se a instrucao no EX for um branch
         case (exmem_branch_op) 
             `BRANCH_NOT: begin
-                pc <= idex_pc + 4;
+                pc <= pc + 4;
             end
             `BRANCH_BEQ: begin
                 if exmem_alu_out == 32'b0 begin
-                    pc <= exmem_pc + exmem_imm;
-
-                    // Reset ID/EX registers
-                    idex_branch_op <= 3'b0
-                    idex_mem_read <= 0
-                    idex_mem_write <= 0
-                    idex_mem_to_reg <= 0
-                    idex_alu_src <= 0
-                    idex_alu_op <= 4'b0
-                    idex_data_read_1 <= 32'b0
-                    idex_data_read_2 <= 32'b0
-                    idex_rs1 <= 5'b0
-                    idex_rs2 <= 5'b0
-                    idex_rd <= 5'b0
-                    idex_imm <= 32'b0
-
-                    // Reset EX/MEM registers
-                    exmem_branch_op <= 3'b0
-                    exmem_mem_to_reg <= 0
-                    exmem_reg_write <= 0
-                    exmem_mem_read <= 0
-                    exmem_mem_write <= 0
-                    exmem_flags <= 4'b0
-                    exmem_data_read_2 <= 32'b0
-                    exmem_rd <= 5'b0
-                    exmem_imm <= 32'b0
+                    pc <= exmem_branch_target;
+                    idex_reset <= 1;
+                    exmem_reset <= 1;
                 end else begin
-                    pc <= idex_pc + 4;
+                    pc <= pc + 4;
                 end
             end
         endcase
 
-        ifid_pc <= pc;
+        ifid_pc <= pc + 4;
     end
     // -------------------------------------------------------------------------
 
@@ -134,96 +113,113 @@ module cpu (
         .read_data2(read_data_2)
     );
 
+    // R-type
+    assign opcode = ifid_ir[6:0];
+    assign funct7 = ifid_ir[31:25];
+    assign funct3 = ifid_ir[14:12];
+    // I-type
+    assign imm = ifid_ir[31:20];
+
     always @(posedge clk) begin
-        idex_pc <= ifid_pc;
+        if (idex_reset) begin
+            // Reset ID/EX registers
+            idex_branch_op <= 3'b0;
+            idex_mem_read <= 0;
+            idex_mem_write <= 0;
+            idex_mem_to_reg <= 0;
+            idex_alu_src <= 0;
+            idex_alu_op <= 4'b0;
+            idex_data_read_1 <= 32'b0;
+            idex_data_read_2 <= 32'b0;
+            idex_rs1 <= 5'b0;
+            idex_rs2 <= 5'b0;
+            idex_rd <= 5'b0;
+            idex_imm <= 32'b0;
 
-        // R-type
-        opcode <= ifid_ir[6:0];
-        funct7 <= ifid_ir[31:25];
-        funct3 <= ifid_ir[14:12];
-        // I-type
-        imm <= ifid_ir[31:20];
+        end else begin
 
-        idex_rs1 <= ifid_ir[19:15];
-        idex_rs2 <= ifid_ir[24:20];
-        idex_rd <= ifid_ir[11:7];
-        idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
-        
-        idex_mem_to_reg <= 0;
-        idex_reg_write <= 0;
-        idex_mem_read <= 0;
-        idex_mem_write <= 0;
-        idex_branch_op <= `BRANCH_NOT;
+            idex_pc <= ifid_pc;
 
-        idex_data_read_1 <= read_data_1;
-        idex_data_read_2 <= read_data_2;
+            idex_rs1 <= ifid_ir[19:15];
+            idex_rs2 <= ifid_ir[24:20];
+            idex_rd <= ifid_ir[11:7];
+            idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
 
-        case (opcode) 
-            // R-type instructions
-            7'b0110011: begin 
-                idex_reg_write <=  1; // True
-                idex_alu_src <= `ALU_SRC_FROM_REG;
-                if (funct3 == 3'b000) begin 
-                    if (funct7 == 7'b0000000) begin 
+            idex_mem_to_reg <= 0;
+            idex_reg_write <= 0;
+            idex_mem_read <= 0;
+            idex_mem_write <= 0;
+            idex_branch_op <= `BRANCH_NOT;
+
+            idex_data_read_1 <= read_data_1;
+            idex_data_read_2 <= read_data_2;
+
+            case (opcode) 
+                // R-type instructions
+                7'b0110011: begin 
+                    idex_reg_write <=  1; // True
+                    idex_alu_src <= `ALU_SRC_FROM_REG;
+                    if (funct3 == 3'b000) begin 
+                        if (funct7 == 7'b0000000) begin 
+                            idex_alu_op <= `ALU_ADD;
+                        end else begin 
+                            idex_alu_op <= `ALU_SUB;
+                        end 
+                    end else if (funct3 == 3'b001) begin
+                        idex_alu_op <= `ALU_SLL; 
+                    end else if (funct3 == 3'b010) begin 
+                        idex_alu_op <= `ALU_SLT;
+                    end else if (funct3 == 3'b011) begin
+                        idex_alu_op <= `ALU_SLTU;
+                    end else if (funct3 == 3'b100) begin 
+                        idex_alu_op <= `ALU_XOR;
+                    end else if (funct3 == 3'b101) begin
+                        if (funct7 == 7'b0000000) begin
+                            idex_alu_op <= `ALU_SRL;
+                        end else begin 
+                            idex_alu_op <= `ALU_SRA;
+                        end 
+                    end else if (funct3 == 3'b110) begin
+                        idex_alu_op <= `ALU_OR;
+                    end else if (funct3 == 3'b111) begin 
+                        idex_alu_op <= `ALU_AND;
+                    end
+                end
+
+                // R-type instructions
+                7'b0010011: begin
+                    idex_reg_write <=  1; // True
+                    idex_alu_src <= `ALU_SRC_FROM_IMM;
+                    if (funct3 == 0) begin
                         idex_alu_op <= `ALU_ADD;
-                    end else begin 
+                    end
+                end
+
+                // B-type instructions
+                7'b1100011: begin
+                    imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
+                    idex_imm <= { { 20 { imm[12] } }, imm[11:0] };
+
+                    idex_alu_src <= `ALU_SRC_FROM_REG;
+
+                    if (funct3 == `BRANCH_BEQ) begin // BEQ
                         idex_alu_op <= `ALU_SUB;
-                    end 
-                end else if (funct3 == 3'b001) begin
-                    idex_alu_op <= `ALU_SLL; 
-                end else if (funct3 == 3'b010) begin 
-                    idex_alu_op <= `ALU_SLT;
-                end else if (funct3 == 3'b011) begin
-                    idex_alu_op <= `ALU_SLTU;
-                end else if (funct3 == 3'b100) begin 
-                    idex_alu_op <= `ALU_XOR;
-                end else if (funct3 == 3'b101) begin
-                    if (funct7 == 7'b0000000) begin
-                        idex_alu_op <= `ALU_SRL;
-                    end else begin 
-                        idex_alu_op <= `ALU_SRA;
-                    end 
-                end else if (funct3 == 3'b110) begin
-                    idex_alu_op <= `ALU_OR;
-                end else if (funct3 == 3'b111) begin 
-                    idex_alu_op <= `ALU_AND;
+                        idex_branch_op <= `BRANCH_BEQ;
+
+                    end else if (funct3 == 3'b101) begin //BGE
+                    // TODO: BGE
+                    end else if (funct3 == 3'b111) begin //BGEU
+                    // TODO: BGEU
+                    end else if (funct3 == 3'b100) begin //BLT
+                    // TODO: BLT
+                    end else if (funct3 == 3'b110) begin //BLTU
+                    // TODO: BLTU
+                    end else if (funct3 == 3'b001) begin //BNE
+                    // TODO: BNE
+                    end
                 end
-            end
-
-            // R-type instructions
-            7'b0010011: begin
-                idex_reg_write <=  1; // True
-                idex_alu_src <= `ALU_SRC_FROM_IMM;
-                if (funct3 == 0) begin
-                    idex_alu_op <= `ALU_ADD;
-                end
-            end
-
-            // B-type instructions
-            7'b1100011: begin
-                imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
-                idex_imm <= { { 20 { imm[12] } }, imm[11:0] };
-
-                idex_alu_src <= `ALU_SRC_FROM_REG;
-
-                if (funct3 == `BRANCH_BEQ) begin // BEQ
-                    idex_alu_op <= `ALU_SUB;
-                    idex_branch_op <= `BRANCH_BEQ;
-
-                end else if (funct3 == 3'b101) begin //BGE
-                // TODO: BGE
-                end else if (funct3 == 3'b111) begin //BGEU
-                // TODO: BGEU
-                end else if (funct3 == 3'b100) begin //BLT
-                // TODO: BLT
-                end else if (funct3 == 3'b110) begin //BLTU
-                // TODO: BLTU
-                end else if (funct3 == 3'b001) begin //BNE
-                // TODO: BNE
-                end
-
-            end
-        endcase
+            endcase
+        end
     end
     // -------------------------------------------------------------------------
 
@@ -245,25 +241,40 @@ module cpu (
     );
 
     always @(posedge clk) begin
-        exmem_branch_op <= idex_branch_op;
-        exmem_mem_read <= idex_mem_read;
-        exmem_mem_to_reg <= idex_mem_to_reg;
-        exmem_mem_write <= idex_mem_write;
-        exmem_rd <= idex_rd;
-        exmem_reg_write <= idex_reg_write;
-        exmem_imm <= idex_imm;
+        if exmem_reset begin
+            // Reset EX/MEM registers
+            exmem_branch_op <= 3'b0;
+            exmem_mem_to_reg <= 0;
+            exmem_reg_write <= 0;
+            exmem_mem_read <= 0;
+            exmem_mem_write <= 0;
+            exmem_flags <= 4'b0;
+            exmem_data_read_2 <= 32'b0;
+            exmem_rd <= 5'b0;
+            exmem_imm <= 32'b0;
 
-        alu_input_a <= idex_data_read_1;
-        case(idex_alu_src)
-            `ALU_SRC_FROM_REG: begin
-                alu_input_b <= idex_data_read_2;
-            end
-            `ALU_SRC_FROM_IMM: begin
-                alu_input_b <= idex_imm;
-            end
-        endcase
+        end else begin
+            exmem_branch_op <= idex_branch_op;
+            exmem_branch_target <= idex_pc + idex_imm << 2;
+            exmem_mem_read <= idex_mem_read;
+            exmem_mem_to_reg <= idex_mem_to_reg;
+            exmem_mem_write <= idex_mem_write;
+            exmem_rd <= idex_rd;
+            exmem_reg_write <= idex_reg_write;
+            exmem_imm <= idex_imm;
 
-        exmem_alu_out <= alu_out;
+            alu_input_a <= idex_data_read_1;
+            case(idex_alu_src)
+                `ALU_SRC_FROM_REG: begin
+                    alu_input_b <= idex_data_read_2;
+                end
+                `ALU_SRC_FROM_IMM: begin
+                    alu_input_b <= idex_imm;
+                end
+            endcase
+
+            exmem_alu_out <= alu_out;
+        end
     end
     // -------------------------------------------------------------------------
 
