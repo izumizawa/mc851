@@ -98,6 +98,7 @@ module cpu (
     reg [2:0] funct3;
     reg [6:0] funct7;
     reg [12:0] imm;
+    reg [12:0] b_imm;
 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
@@ -113,12 +114,15 @@ module cpu (
         .read_data2(read_data_2)
     );
 
-    // R-type
+    // Assigns
     assign opcode = ifid_ir[6:0];
     assign funct7 = ifid_ir[31:25];
     assign funct3 = ifid_ir[14:12];
-    // I-type
+
+    // Default imm
     assign imm = ifid_ir[31:20];
+    // B-type imm
+    assign b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
 
     always @(posedge clk) begin
         if (idex_reset) begin
@@ -197,8 +201,7 @@ module cpu (
 
                 // B-type instructions
                 7'b1100011: begin
-                    imm <= { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
-                    idex_imm <= { { 20 { imm[12] } }, imm[11:0] };
+                    idex_imm <= { { 20 { b_imm[12] } }, b_imm[11:0] };
 
                     idex_alu_src <= `ALU_SRC_FROM_REG;
 
