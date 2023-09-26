@@ -125,7 +125,7 @@ module cpu (
     always @(posedge clk) begin
         if (idex_reset) begin
             // Reset ID/EX registers
-            idex_branch_op <= NOT_BRANCH;
+            idex_branch_op <= `NOT_BRANCH;
             idex_mem_read <= 0;
             idex_mem_write <= 0;
             idex_mem_to_reg <= 0;
