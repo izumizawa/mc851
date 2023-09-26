@@ -28,7 +28,6 @@ module cpu (
 	reg [31:0] idex_imm;
 
     // EX/MEM Register
-    reg [31:0] exmem_pc;
     // ... sinais de controle
     reg exmem_reset;
     reg [2:0] exmem_branch_op;
@@ -43,7 +42,6 @@ module cpu (
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
     reg [ 4:0] exmem_rd;
-    reg [31:0] exmem_imm;
 
     // MEM/WB Register
     reg [31:0] memwb_mem_data_read;
@@ -97,7 +95,7 @@ module cpu (
     reg [6:0] opcode;
     reg [2:0] funct3;
     reg [6:0] funct7;
-    reg [12:0] imm;
+    reg [11:0] imm;
     reg [12:0] b_imm;
 
     wire [31:0] read_data_1;
@@ -127,7 +125,7 @@ module cpu (
     always @(posedge clk) begin
         if (idex_reset) begin
             // Reset ID/EX registers
-            idex_branch_op <= 3'b0;
+            idex_branch_op <= NOT_BRANCH;
             idex_mem_read <= 0;
             idex_mem_write <= 0;
             idex_mem_to_reg <= 0;
@@ -254,7 +252,6 @@ module cpu (
             exmem_flags <= 4'b0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
-            exmem_imm <= 32'b0;
 
         end else begin
             exmem_branch_op <= idex_branch_op;
@@ -264,7 +261,6 @@ module cpu (
             exmem_mem_write <= idex_mem_write;
             exmem_rd <= idex_rd;
             exmem_reg_write <= idex_reg_write;
-            exmem_imm <= idex_imm;
 
             alu_input_a <= idex_data_read_1;
             case(idex_alu_src)
