@@ -87,6 +87,9 @@ module cpu (
     reg [ 6:0] s_imm_high;
     reg [ 4:0] s_imm_low;
     reg [31:0] s_imm_extended;
+
+    reg [19:0] u_imm;
+    reg [31:0] u_imm_extended;
  
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
@@ -120,6 +123,10 @@ module cpu (
         s_imm_high <= ifid_ir[31:25];
         s_imm_low  <= ifid_ir[11:7];
         s_imm_extended <= { {20{s_imm_high[6]}}, {s_imm_high, s_imm_low} };
+
+        // U-type
+        u_imm <= ifid_ir[31:12];
+        u_imm_extended <= {u_imm, 12'b000000000000};
 
         idex_rs1 <= ifid_ir[19:15];
         idex_rs2 <= ifid_ir[24:20];
@@ -203,6 +210,20 @@ module cpu (
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= s_imm_extended;
             end
+
+            // U-type instructions
+            7'b0110111: begin       // lui
+                // TODO: PC-related controls
+                i_imm_extended <= u_imm_extended;
+                idex_reg_write <=  1; // True
+                idex_alu_op <= `ALU_ADD;
+            end
+            7'b0010111: begin       // auipc
+                // TODO: PC-related controls
+                i_imm_extended <= u_imm_extended;
+                idex_reg_write <=  1; // True
+                idex_alu_op <= `ALU_ADD;
+		    end
         endcase
     end
     // -------------------------------------------------------------------------
