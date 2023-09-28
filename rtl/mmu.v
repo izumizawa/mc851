@@ -162,6 +162,14 @@ module mmu #(
 
     reg [3:0] current_state = STATE_IDLE;
 
+    always @(*) begin
+        address_aux = address;
+    
+        if(current_state == STATE_UNALIGNED_READ2) begin
+            address_aux = address + 4;
+        end
+    end
+
     // Realiza operações de leitura/escrita em múltiplos ciclos
     always @(posedge clk, negedge reset_n) begin
         data_in_aux <= data_in;
@@ -261,7 +269,6 @@ module mmu #(
                 read_enable_aux <= 1;
                 write_enable_aux <= 0;
                 mem_read2 <= data_out_aux;
-                address_aux <= address + 4;
                 current_state <= STATE_UNALIGNED_READ2;
             end
 

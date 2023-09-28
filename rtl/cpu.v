@@ -136,7 +136,7 @@ module cpu (
         .clk(clk),
         .read_reg1(idex_rs1),
         .read_reg2(idex_rs2),
-        .write_reg(idex_rd),
+        .write_reg(memwb_rd),
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
         .read_data1(read_data_1),
@@ -168,6 +168,7 @@ module cpu (
             idex_rs2 <= 5'b0;
             idex_rd <= 5'b0;
             idex_imm <= 32'b0;
+            idex_reg_write <= 0;
         end else begin
             idex_pc <= ifid_pc;
 
@@ -281,6 +282,7 @@ module cpu (
             exmem_flags <= 4'b0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
+            exmem_alu_out <= 0;
         end else begin
             exmem_branch_op <= idex_branch_op;
             exmem_branch_target <= idex_pc + idex_imm << 2;
@@ -330,15 +332,12 @@ module cpu (
     /***************************************************************************
      * Writeback (WB) stage
      **************************************************************************/
-    always @(posedge clk, negedge reset_n) begin
-        if(!reset_n) begin
-            wb_data <= 0;
+
+    always @(*) begin
+        if(memwb_mem_to_reg) begin
+            wb_data = memwb_mem_data_read;
         end else begin
-            if(memwb_mem_to_reg) begin
-                wb_data <= memwb_mem_data_read;
-            end else begin
-                wb_data <= memwb_alu_out;
-            end
+            wb_data = memwb_alu_out;
         end
     end
     // -------------------------------------------------------------------------
