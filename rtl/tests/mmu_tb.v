@@ -1,73 +1,100 @@
+`include "../define.v"
+
 module mmu_tb();
 
     // Sinais de teste
     reg clk;
-    reg [ 3:0] write_enable;
+    reg reset_n;
+    reg write_enable;
+    reg read_enable;
+    reg mem_signed_read;
+    reg [ 1:0] mem_data_width;
     reg [31:0] address;
     reg [31:0] data_in;
     wire [31:0] data_out;
+    wire mem_ready;
 
-    mmu mmu_inst (
-        .clk(clk),
-        .write_enable(write_enable),
-        .address(address),
-        .data_in(data_in),
-        .data_out(data_out)
-    );
-
-    // Clock will change in every 5 units
     initial begin
+        $dumpfile("mmu_wave.vcd");
+        $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
+    mmu #( .ROMFILE("../../src/memdump/test.mem")) mmu_inst (
+        .clk(clk),
+        .reset_n(reset_n),
+        .write_enable(write_enable),
+        .read_enable(read_enable),
+        .mem_signed_read(mem_signed_read),
+        .mem_data_width(mem_data_width),
+        .address(address),
+        .data_in(data_in),
+        .data_out(data_out),
+        .mem_ready(mem_ready)
+    );
+
     task test_rom_read();
     begin
-        $write("  test_rom_read: ");
-
-        clk = 0;
-        write_enable =0;
+        $write("  test_rom_read:");
+        write_enable = 0;
+        read_enable = 1;
+        mem_signed_read = 0;
+        mem_data_width = `MMU_WIDTH_WORD;
         address = 0;
         data_in = 0;
 
-        #2
-        address = 10;
-        data_in = 42;
+        while(mem_ready !== 1) #2;
 
-        #2
-        if (wait_if != 1)
-            $display("wait_if should be 1 while mem is using the component");
-
-        #2
-        op_mem = 2'b0;
-
-        #2
-        if (wait_if != 0 && wait_mem != 0)
-            $display("wait_if and wait_mem should be 0 while the component is not in use");
-
-        #2
-        op_mem = 2'b10;
-        address = 10;
-
-        #31
-        if (wait_if != 1)
-            $display("wait_if should be 1 while mem is using the component");
-
-        #40
-        op_mem = 2'b0;
-
-        #50
-        if (data_out != 42)
-            $display("data_out should be 00000000000000000000000000101010, but is %b", data_out);
+        if (data_out == 32'h00200293)
+            $display(" passed!");
         else
-            $display("passed!");
-        end
+            $error("    data_out should be 32'h00200293, but is %h", data_out);
+
+        read_enable = 0;
+        #8;
+    end
+    endtask
+
+    task test_ram_read_and_write();
+    begin
+        $write("  test_ram_read_and_write:");
+        write_enable = 1;
+        read_enable = 0;
+        mem_signed_read = 0;
+        mem_data_width = `MMU_WIDTH_WORD;
+        address = 32'h01000000; // First address of RAM
+        data_in = 32'h69BABACA;
+
+        while(mem_ready !== 1) #2;
+
+        write_enable = 0;
+        read_enable = 1;
+
+        #2;
+        while(mem_ready !== 1) #2;
+
+        if (data_out == 32'h69BABACA)
+            $display(" passed!");
+        else
+            $error("    data_out should be 32'h69BABACA, but is %h", data_out);
+
+        read_enable = 0;
+        #8;
+    end
     endtask
 
     initial begin
         $display("memory_control_tb: starting tests");
-        test_write_and_read_mem();
-        test_read_if();
+
+        reset_n = 0;
+        #1;
+        reset_n = 1;
+
+        test_ram_read_and_write();
+        test_rom_read();
+
+        $dumpoff;
         $finish;
     end
 
