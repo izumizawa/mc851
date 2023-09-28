@@ -18,6 +18,6 @@ echo ""
 
 # Test SOC
 echo "===Testing soc_tb.v=============================================="
-iverilog -o soc.vvp soc_tb.v ../soc.v
+iverilog -I ../ -o soc.vvp soc_tb.v ../soc.v
 vvp soc.vvp
 echo ""

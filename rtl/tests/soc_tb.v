@@ -1,21 +1,10 @@
-`include "../soc.v"
-`default_nettype none
-
 module soc_tb();
-    reg clock,
-    reg reset,
-    reg         mmu_mem_ready,
-    reg [31:0]  mmu_data_out,
-    reg         mmu_write_enable,
-    reg         mmu_read_enable,
-    reg         mmu_mem_signed_read,
-    reg [ 1:0]  mmu_mem_data_width,
-    reg [31:0]  mmu_address,
-    reg [31:0]  mmu_data_in,
+    reg clk;
+    reg reset_n;
 
     soc soc_inst(
-        .rst_n (rst_n),
-        .clk (clk),
+        .reset_n(reset_n),
+        .clk(clk)
     );
 
     initial begin
@@ -27,7 +16,21 @@ module soc_tb();
 
     task test_addi();
     begin
-        
+        $write("  test_write_and_read: ");
+        reset_n = 0;
+        #2;
+        reset_n = 1;
+        #42; // wait for addi to be complete
+        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2)
+            $display(" passed!");
+        else
+            $error("    data_out should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
     end
     endtask
+
+     initial begin
+        $display("soc_tb: starting tests");
+        test_addi();
+        $finish;
+    end
 endmodule
