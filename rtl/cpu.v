@@ -169,6 +169,7 @@ module cpu (
             idex_rd <= 5'b0;
             idex_imm <= 32'b0;
             idex_reg_write <= 0;
+            idex_pc <= 0;
         end else begin
             idex_pc <= ifid_pc;
 
@@ -258,18 +259,21 @@ module cpu (
     /***************************************************************************
      * Execute (EX) stage
      **************************************************************************/
-    reg [31:0] alu_input_a;
-    reg [31:0] alu_input_b;
+    wire [31:0] alu_input_a;
+    wire [31:0] alu_input_b;
     
     wire [31:0] alu_out;
 
     // Modules instantiations
-    alu_module alu(
+    alu_module alu_inst(
         .alu_input_op(idex_alu_op),
         .alu_input_a(alu_input_a),
         .alu_input_b(alu_input_b),
         .alu_output_result(alu_out) // Wire always required in modules output
     );
+
+    assign alu_input_a = idex_data_read_1;
+    assign alu_input_b = idex_alu_src == `ALU_SRC_FROM_REG ? idex_data_read_2 : idex_imm;
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n || exmem_reset) begin
@@ -283,6 +287,7 @@ module cpu (
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
+            exmem_branch_target <= 0;
         end else begin
             exmem_branch_op <= idex_branch_op;
             exmem_branch_target <= idex_pc + idex_imm << 2;
@@ -291,16 +296,6 @@ module cpu (
             exmem_mem_write <= idex_mem_write;
             exmem_rd <= idex_rd;
             exmem_reg_write <= idex_reg_write;
-
-            alu_input_a <= idex_data_read_1;
-            case(idex_alu_src)
-                `ALU_SRC_FROM_REG: begin
-                    alu_input_b <= idex_data_read_2;
-                end
-                `ALU_SRC_FROM_IMM: begin
-                    alu_input_b <= idex_imm;
-                end
-            endcase
 
             exmem_alu_out <= alu_out;
         end
