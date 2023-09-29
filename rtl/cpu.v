@@ -1,8 +1,19 @@
 // Top model. Describes the whole CPU and its components.
 `include "define.v"
+`include "../components/register_file.v"
+`include "../components/alu_module.v"
 
 module cpu (
-    input clk, reset
+    input         clk,
+    input         reset_n,
+    input         mmu_mem_ready,
+    input [31:0]  mmu_data_out,
+    output        mmu_write_enable,
+    output        mmu_read_enable,
+    output        mmu_mem_signed_read,
+    output [ 1:0] mmu_mem_data_width,
+    output [31:0] mmu_address,
+    output [31:0] mmu_data_in
 );
     // IF/ID Register
     reg [31:0] ifid_pc;
@@ -60,30 +71,50 @@ module cpu (
     // Forwarding Unit
     // TODO: A fazer.
 
-
     /***************************************************************************
      * Instruction Fetch (IF) stage
      **************************************************************************/
     reg [31:0] pc;
 
-    always @(posedge clk) begin
+    assign mmu_write_enable = 0;
+    assign mmu_read_enable = 1;
+    assign mmu_mem_signed_read = 0;
+    assign mmu_mem_data_width = `MMU_WIDTH_WORD;
 
-        case (exmem_branch_op) 
-            `NOT_BRANCH: begin
-                pc <= pc + 4;
-            end
-            `BRANCH_BEQ: begin
-                if (exmem_alu_out == 32'b0) begin
-                    pc <= exmem_branch_target;
-                    idex_reset <= 1;
-                    exmem_reset <= 1;
-                end else begin
-                    pc <= pc + 4;
-                end
-            end
-        endcase
+    assign mmu_address = pc;
+    assign mmu_data_in = 0; // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
 
-        ifid_pc <= pc + 4;
+    always @(posedge clk, negedge reset_n) begin
+        if(!reset_n) begin
+            pc <= 0;
+            ifid_pc <= 32'b0;
+            ifid_ir <= `RISCV_NOP;
+        end else begin
+            idex_reset <= 0;
+            exmem_reset <= 0;
+
+            if(mmu_mem_ready) begin
+                case (exmem_branch_op) 
+                    `NOT_BRANCH: begin
+                        pc <= pc + 4;
+                    end
+                    `BRANCH_BEQ: begin
+                        if (exmem_alu_out == 32'b0) begin
+                            pc <= exmem_branch_target;
+                            idex_reset <= 1;
+                            exmem_reset <= 1;
+                        end else begin
+                            pc <= pc + 4;
+                        end
+                    end
+                endcase
+                
+                ifid_ir <= mmu_data_out;
+                ifid_pc <= pc + 4;
+            end else begin
+                ifid_ir <= `RISCV_NOP;
+            end
+        end
     end
     // -------------------------------------------------------------------------
 
@@ -92,21 +123,13 @@ module cpu (
      * Instruction Decode (ID) stage
      **************************************************************************/
 
-    reg [6:0] opcode;
-    reg [2:0] funct3;
-    reg [6:0] funct7;
-
-    reg [11:0] imm;
-    reg [12:0] b_imm;
-
-    reg [31:0] i_imm_extended;
-
-    reg [ 4:0] shamt;
-    reg [31:0] shamt_extended;
-
-    reg [ 6:0] s_imm_high;
-    reg [ 4:0] s_imm_low;
-    reg [31:0] s_imm_extended;
+    wire [6:0] opcode;
+    wire [2:0] funct3;
+    wire [6:0] funct7;
+    wire [31:0] i_imm;
+    wire [12:0] b_imm;
+    wire [31:0] s_imm;
+    wire [31:0] shamt;
  
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
@@ -115,7 +138,7 @@ module cpu (
         .clk(clk),
         .read_reg1(idex_rs1),
         .read_reg2(idex_rs2),
-        .write_reg(idex_rd),
+        .write_reg(memwb_rd),
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
         .read_data1(read_data_1),
@@ -127,44 +150,15 @@ module cpu (
     assign funct7 = ifid_ir[31:25];
     assign funct3 = ifid_ir[14:12];
 
-    // Default imm
-    assign imm = ifid_ir[31:20];
-    // B-type imm
+    // Default i_imm
+    assign i_imm = { { 20{ ifid_ir[31] } }, ifid_ir[31:20] };
+    assign shamt = { 27'b0, ifid_ir[24:20] };
+    // B-type b_imm
     assign b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
+    assign s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
 
-    always @(posedge clk) begin
-        // R-type
-        opcode <= ifid_ir[6:0];
-        funct7 <= ifid_ir[31:25];
-        funct3 <= ifid_ir[14:12];
-
-        // I-type
-        i_imm <= ifid_ir[31:20];
-        i_imm_extended <= { {20{i_imm[11]}}, i_imm };
-
-        // shamt for SLLI, SRLI and SRAI
-        shamt <= ifid_ir[24:20];
-        shamt_extended <= {27'b000000000000000000000000000, shamt};
-
-        // S-type
-        s_imm_high <= ifid_ir[31:25];
-        s_imm_low  <= ifid_ir[11:7];
-        s_imm_extended <= { {20{s_imm_high[6]}}, {s_imm_high, s_imm_low} };
-
-        idex_rs1 <= ifid_ir[19:15];
-        idex_rs2 <= ifid_ir[24:20];
-        idex_rd <= ifid_ir[11:7];
-        
-        idex_mem_to_reg <= 0;
-        idex_reg_write <= 0;
-        idex_branch <= 0;
-        idex_mem_read <= 0;
-        idex_mem_write <= 0;
-
-        idex_data_read_1 <= read_data_1;
-        idex_data_read_2 <= read_data_2;
-
-        if (idex_reset) begin
+    always @(posedge clk, negedge reset_n) begin
+        if (!reset_n || idex_reset) begin
             // Reset ID/EX registers
             idex_branch_op <= `NOT_BRANCH;
             idex_mem_read <= 0;
@@ -178,12 +172,14 @@ module cpu (
             idex_rs2 <= 5'b0;
             idex_rd <= 5'b0;
             idex_imm <= 32'b0;
+            idex_reg_write <= 0;
+            idex_pc <= 0;
         end else begin
             idex_pc <= ifid_pc;
             idex_rs1 <= ifid_ir[19:15];
             idex_rs2 <= ifid_ir[24:20];
             idex_rd <= ifid_ir[11:7];
-            idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
+            idex_imm <= { { 20 { i_imm[11] } }, i_imm[11:0] };
             idex_mem_to_reg <= 0;
             idex_reg_write <= 0;
             idex_mem_read <= 0;
@@ -229,7 +225,7 @@ module cpu (
             7'b0010011: begin
                 idex_reg_write <=  1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
-                idex_imm <= i_imm_extended;
+                idex_imm <= i_imm;
                 if (funct3 == 3'b000) begin
                     idex_alu_op <= `ALU_ADD;
                 end else if (funct3 == 3'b010) begin
@@ -243,10 +239,10 @@ module cpu (
                 end else if (funct3 == 3'b111) begin
                     idex_alu_op <= `ALU_AND;
                 end else if (funct3 == 3'b001) begin
-                    idex_imm <= shamt_extended;
+                    idex_imm <= shamt;
                     idex_alu_op <= `ALU_SLL; //slli
                 end else if (funct3 == 3'b101) begin
-                    idex_imm <= shamt_extended;
+                    idex_imm <= shamt;
                     if (funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_SRL; //srli
                     end else begin
@@ -260,7 +256,7 @@ module cpu (
                 idex_mem_write <= 1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
                 idex_alu_op <= `ALU_ADD;
-                idex_imm <= s_imm_extended;
+                idex_imm <= s_imm;
             end
 
             // B-type instructions
@@ -293,21 +289,24 @@ module cpu (
     /***************************************************************************
      * Execute (EX) stage
      **************************************************************************/
-    reg [31:0] alu_input_a;
-    reg [31:0] alu_input_b;
+    wire [31:0] alu_input_a;
+    wire [31:0] alu_input_b;
     
     wire [31:0] alu_out;
 
     // Modules instantiations
-    alu_module alu(
+    alu_module alu_inst(
         .alu_input_op(idex_alu_op),
         .alu_input_a(alu_input_a),
         .alu_input_b(alu_input_b),
         .alu_output_result(alu_out) // Wire always required in modules output
     );
 
-    always @(posedge clk) begin
-        if (exmem_reset) begin
+    assign alu_input_a = idex_data_read_1;
+    assign alu_input_b = idex_alu_src == `ALU_SRC_FROM_REG ? idex_data_read_2 : idex_imm;
+
+    always @(posedge clk, negedge reset_n) begin
+        if (!reset_n || exmem_reset) begin
             // Reset EX/MEM registers
             exmem_branch_op <= 3'b0;
             exmem_mem_to_reg <= 0;
@@ -317,7 +316,8 @@ module cpu (
             exmem_flags <= 4'b0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
-
+            exmem_alu_out <= 0;
+            exmem_branch_target <= 0;
         end else begin
             exmem_branch_op <= idex_branch_op;
             exmem_branch_target <= idex_pc + idex_imm << 2;
@@ -326,16 +326,6 @@ module cpu (
             exmem_mem_write <= idex_mem_write;
             exmem_rd <= idex_rd;
             exmem_reg_write <= idex_reg_write;
-
-            alu_input_a <= idex_data_read_1;
-            case(idex_alu_src)
-                `ALU_SRC_FROM_REG: begin
-                    alu_input_b <= idex_data_read_2;
-                end
-                `ALU_SRC_FROM_IMM: begin
-                    alu_input_b <= idex_imm;
-                end
-            endcase
 
             exmem_alu_out <= alu_out;
         end
@@ -346,11 +336,20 @@ module cpu (
     /***************************************************************************
      * Memory access (MEM) stage
      **************************************************************************/
-    always @(posedge clk) begin
-        memwb_alu_out <= exmem_alu_out;
-        memwb_rd <= exmem_rd;
-        memwb_reg_write <= exmem_reg_write;
-        memwb_mem_to_reg <= exmem_mem_to_reg;
+    always @(posedge clk, negedge reset_n) begin
+        if(!reset_n) begin
+            // Reset MEM/WB registers
+            memwb_mem_data_read <= 32'b0;
+            memwb_alu_out <= 32'b0;
+            memwb_rd <= 5'b0;
+            memwb_reg_write <= 0;
+            memwb_mem_to_reg <= 0;
+        end else begin
+            memwb_alu_out <= exmem_alu_out;
+            memwb_rd <= exmem_rd;
+            memwb_reg_write <= exmem_reg_write;
+            memwb_mem_to_reg <= exmem_mem_to_reg;
+        end
     end
     // -------------------------------------------------------------------------
 
@@ -358,11 +357,12 @@ module cpu (
     /***************************************************************************
      * Writeback (WB) stage
      **************************************************************************/
-    always @(posedge clk) begin
+
+    always @(*) begin
         if(memwb_mem_to_reg) begin
-            wb_data <= memwb_mem_data_read;
+            wb_data = memwb_mem_data_read;
         end else begin
-            wb_data <= memwb_alu_out;
+            wb_data = memwb_alu_out;
         end
     end
     // -------------------------------------------------------------------------

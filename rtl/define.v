@@ -1,5 +1,8 @@
 `ifndef _define_v_
 
+// RISC-V instructions
+`define RISCV_NOP 32'h00000013
+
 // -------------------------- MMU definitions
 `define MMU_WIDTH_BYTE 2'b00
 `define MMU_WIDTH_HALF 2'b01
@@ -23,9 +26,6 @@
 // -------------------------- COMPARE
 `define ALU_SLT     4'b1000
 `define ALU_SLTU    4'b1001
-// -------------------------- NOP
-`define ALU_NOP     4'b1111
-
 // -------------------------- BRANCH
 `define BRANCH_BEQ      3'b000
 `define BRANCH_BNE      3'b001
