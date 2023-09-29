@@ -27,7 +27,7 @@ module soc (
         .mmu_data_in(mmu_data_in)
     );
 
-    mmu #( .ROMFILE("../../src/memdump/test.mem")) mmu_inst (
+    mmu #( .ROMFILE("../../src/memdump/beq.mem")) mmu_inst (
         .clk(clk),
         .reset_n(reset_n),
         .write_enable(mmu_write_enable),

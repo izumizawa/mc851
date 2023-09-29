@@ -92,28 +92,27 @@ module cpu (
         end else begin
             idex_reset <= 0;
             exmem_reset <= 0;
+            ifid_pc <= pc;
 
-            if(mmu_mem_ready) begin
-                case (exmem_branch_op) 
-                    `NOT_BRANCH: begin
+            case (exmem_branch_op) 
+                `NOT_BRANCH: begin
+                    if(mmu_mem_ready) begin
+                        pc <= pc + 4;
+                        ifid_ir <= mmu_data_out;
+                    end else begin
+                        ifid_ir <= `RISCV_NOP;
+                    end
+                end
+                `BRANCH_BEQ: begin
+                    if (exmem_alu_out == 32'b0) begin
+                        pc <= exmem_branch_target;
+                        idex_reset <= 1;
+                        exmem_reset <= 1;
+                    end else begin
                         pc <= pc + 4;
                     end
-                    `BRANCH_BEQ: begin
-                        if (exmem_alu_out == 32'b0) begin
-                            pc <= exmem_branch_target;
-                            idex_reset <= 1;
-                            exmem_reset <= 1;
-                        end else begin
-                            pc <= pc + 4;
-                        end
-                    end
-                endcase
-                
-                ifid_ir <= mmu_data_out;
-                ifid_pc <= pc + 4;
-            end else begin
-                ifid_ir <= `RISCV_NOP;
-            end
+                end
+            endcase
         end
     end
     // -------------------------------------------------------------------------
@@ -308,7 +307,7 @@ module cpu (
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n || exmem_reset) begin
             // Reset EX/MEM registers
-            exmem_branch_op <= 3'b0;
+            exmem_branch_op <= `NOT_BRANCH;
             exmem_mem_to_reg <= 0;
             exmem_reg_write <= 0;
             exmem_mem_read <= 0;
@@ -320,7 +319,7 @@ module cpu (
             exmem_branch_target <= 0;
         end else begin
             exmem_branch_op <= idex_branch_op;
-            exmem_branch_target <= idex_pc + idex_imm << 2;
+            exmem_branch_target <= idex_pc + idex_imm;
             exmem_mem_read <= idex_mem_read;
             exmem_mem_to_reg <= idex_mem_to_reg;
             exmem_mem_write <= idex_mem_write;

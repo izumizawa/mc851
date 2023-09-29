@@ -22,7 +22,7 @@ module soc_tb();
         reset_n = 0;
         #1;
         reset_n = 1;
-        #14; // wait for addi to be complete
+        #42; // wait for addi to be complete
         if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2)
             $display(" passed!");
         else
