@@ -95,9 +95,19 @@ module cpu (
     reg [6:0] opcode;
     reg [2:0] funct3;
     reg [6:0] funct7;
+
     reg [11:0] imm;
     reg [12:0] b_imm;
 
+    reg [31:0] i_imm_extended;
+
+    reg [ 4:0] shamt;
+    reg [31:0] shamt_extended;
+
+    reg [ 6:0] s_imm_high;
+    reg [ 4:0] s_imm_low;
+    reg [31:0] s_imm_extended;
+ 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
@@ -123,6 +133,37 @@ module cpu (
     assign b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
 
     always @(posedge clk) begin
+        // R-type
+        opcode <= ifid_ir[6:0];
+        funct7 <= ifid_ir[31:25];
+        funct3 <= ifid_ir[14:12];
+
+        // I-type
+        i_imm <= ifid_ir[31:20];
+        i_imm_extended <= { {20{i_imm[11]}}, i_imm };
+
+        // shamt for SLLI, SRLI and SRAI
+        shamt <= ifid_ir[24:20];
+        shamt_extended <= {27'b000000000000000000000000000, shamt};
+
+        // S-type
+        s_imm_high <= ifid_ir[31:25];
+        s_imm_low  <= ifid_ir[11:7];
+        s_imm_extended <= { {20{s_imm_high[6]}}, {s_imm_high, s_imm_low} };
+
+        idex_rs1 <= ifid_ir[19:15];
+        idex_rs2 <= ifid_ir[24:20];
+        idex_rd <= ifid_ir[11:7];
+        
+        idex_mem_to_reg <= 0;
+        idex_reg_write <= 0;
+        idex_branch <= 0;
+        idex_mem_read <= 0;
+        idex_mem_write <= 0;
+
+        idex_data_read_1 <= read_data_1;
+        idex_data_read_2 <= read_data_2;
+
         if (idex_reset) begin
             // Reset ID/EX registers
             idex_branch_op <= `NOT_BRANCH;
@@ -137,90 +178,114 @@ module cpu (
             idex_rs2 <= 5'b0;
             idex_rd <= 5'b0;
             idex_imm <= 32'b0;
-
         end else begin
-
             idex_pc <= ifid_pc;
-
             idex_rs1 <= ifid_ir[19:15];
             idex_rs2 <= ifid_ir[24:20];
             idex_rd <= ifid_ir[11:7];
             idex_imm <= { { 20 { imm[11] } }, imm[11:0] };
-
             idex_mem_to_reg <= 0;
             idex_reg_write <= 0;
             idex_mem_read <= 0;
             idex_mem_write <= 0;
             idex_branch_op <= `NOT_BRANCH;
-
             idex_data_read_1 <= read_data_1;
             idex_data_read_2 <= read_data_2;
-
-            case (opcode) 
-                // R-type instructions
-                7'b0110011: begin 
-                    idex_reg_write <=  1; // True
-                    idex_alu_src <= `ALU_SRC_FROM_REG;
-                    if (funct3 == 3'b000) begin 
-                        if (funct7 == 7'b0000000) begin 
-                            idex_alu_op <= `ALU_ADD;
-                        end else begin 
-                            idex_alu_op <= `ALU_SUB;
-                        end 
-                    end else if (funct3 == 3'b001) begin
-                        idex_alu_op <= `ALU_SLL; 
-                    end else if (funct3 == 3'b010) begin 
-                        idex_alu_op <= `ALU_SLT;
-                    end else if (funct3 == 3'b011) begin
-                        idex_alu_op <= `ALU_SLTU;
-                    end else if (funct3 == 3'b100) begin 
-                        idex_alu_op <= `ALU_XOR;
-                    end else if (funct3 == 3'b101) begin
-                        if (funct7 == 7'b0000000) begin
-                            idex_alu_op <= `ALU_SRL;
-                        end else begin 
-                            idex_alu_op <= `ALU_SRA;
-                        end 
-                    end else if (funct3 == 3'b110) begin
-                        idex_alu_op <= `ALU_OR;
-                    end else if (funct3 == 3'b111) begin 
-                        idex_alu_op <= `ALU_AND;
-                    end
-                end
-
-                // R-type instructions
-                7'b0010011: begin
-                    idex_reg_write <=  1; // True
-                    idex_alu_src <= `ALU_SRC_FROM_IMM;
-                    if (funct3 == 0) begin
-                        idex_alu_op <= `ALU_ADD;
-                    end
-                end
-
-                // B-type instructions
-                7'b1100011: begin
-                    idex_imm <= { { 20 { b_imm[12] } }, b_imm[11:0] };
-
-                    idex_alu_src <= `ALU_SRC_FROM_REG;
-
-                    if (funct3 == `BRANCH_BEQ) begin // BEQ
-                        idex_alu_op <= `ALU_SUB;
-                        idex_branch_op <= `BRANCH_BEQ;
-
-                    end else if (funct3 == 3'b101) begin //BGE
-                    // TODO: BGE
-                    end else if (funct3 == 3'b111) begin //BGEU
-                    // TODO: BGEU
-                    end else if (funct3 == 3'b100) begin //BLT
-                    // TODO: BLT
-                    end else if (funct3 == 3'b110) begin //BLTU
-                    // TODO: BLTU
-                    end else if (funct3 == 3'b001) begin //BNE
-                    // TODO: BNE
-                    end
-                end
-            endcase
         end
+
+        case (opcode) 
+            // R-type instructions
+            7'b0110011: begin 
+                idex_reg_write <=  1; // True
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+                if (funct3 == 3'b000) begin 
+                    if (funct7 == 7'b0000000) begin 
+                        idex_alu_op <= `ALU_ADD;
+                    end else begin 
+                        idex_alu_op <= `ALU_SUB;
+                    end 
+                end else if (funct3 == 3'b001) begin
+                    idex_alu_op <= `ALU_SLL; 
+                end else if (funct3 == 3'b010) begin 
+                    idex_alu_op <= `ALU_SLT;
+                end else if (funct3 == 3'b011) begin
+                    idex_alu_op <= `ALU_SLTU;
+                end else if (funct3 == 3'b100) begin 
+                    idex_alu_op <= `ALU_XOR;
+                end else if (funct3 == 3'b101) begin
+                    if (funct7 == 7'b0000000) begin
+                        idex_alu_op <= `ALU_SRL;
+                    end else begin 
+                        idex_alu_op <= `ALU_SRA;
+                    end 
+                end else if (funct3 == 3'b110) begin
+                    idex_alu_op <= `ALU_OR;
+                end else if (funct3 == 3'b111) begin 
+                    idex_alu_op <= `ALU_AND;
+                end
+            end
+
+            // I-type instructions
+            7'b0010011: begin
+                idex_reg_write <=  1; // True
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_imm <= i_imm_extended;
+                if (funct3 == 3'b000) begin
+                    idex_alu_op <= `ALU_ADD;
+                end else if (funct3 == 3'b010) begin
+                    idex_alu_op <= `ALU_ADD;
+                end else if (funct3 == 3'b011) begin
+                    idex_alu_op <= `ALU_SLT;
+                end else if (funct3 == 3'b100) begin
+                    idex_alu_op <= `ALU_XOR;
+                end else if (funct3 == 3'b110) begin
+                    idex_alu_op <= `ALU_OR;
+                end else if (funct3 == 3'b111) begin
+                    idex_alu_op <= `ALU_AND;
+                end else if (funct3 == 3'b001) begin
+                    idex_imm <= shamt_extended;
+                    idex_alu_op <= `ALU_SLL; //slli
+                end else if (funct3 == 3'b101) begin
+                    idex_imm <= shamt_extended;
+                    if (funct7 == 7'b0000000) begin
+                        idex_alu_op <= `ALU_SRL; //srli
+                    end else begin
+                        idex_alu_op <= `ALU_SRA; //srai
+                    end
+                end
+            end
+
+            // S-type instructions
+            7'b0100011: begin
+                idex_mem_write <= 1; // True
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= s_imm_extended;
+            end
+
+            // B-type instructions
+            7'b1100011: begin
+                idex_imm <= { { 20 { b_imm[12] } }, b_imm[11:0] };
+
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+
+                if (funct3 == `BRANCH_BEQ) begin // BEQ
+                    idex_alu_op <= `ALU_SUB;
+                    idex_branch_op <= `BRANCH_BEQ;
+
+                end else if (funct3 == 3'b101) begin //BGE
+                // TODO: BGE
+                end else if (funct3 == 3'b111) begin //BGEU
+                // TODO: BGEU
+                end else if (funct3 == 3'b100) begin //BLT
+                // TODO: BLT
+                end else if (funct3 == 3'b110) begin //BLTU
+                // TODO: BLTU
+                end else if (funct3 == 3'b001) begin //BNE
+                // TODO: BNE
+                end
+            end
+        endcase
     end
     // -------------------------------------------------------------------------
 
