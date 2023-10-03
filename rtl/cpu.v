@@ -21,7 +21,6 @@ module cpu (
 
     // ID/EX Register
     reg [31:0] idex_pc;
-    // ... sinais de controle
     reg idex_reset;
     reg [2:0] idex_branch_op;
     reg idex_reg_write;
@@ -30,7 +29,6 @@ module cpu (
     reg idex_mem_to_reg;
     reg idex_alu_src;
     reg [ 3:0] idex_alu_op;
-    // TODO: Ajustar conforme implementação da ALU e Pipeline
     reg [31:0] idex_data_read_1;
     reg [31:0] idex_data_read_2;
     reg [ 4:0] idex_rs1;
@@ -39,7 +37,6 @@ module cpu (
 	reg [31:0] idex_imm;
 
     // EX/MEM Register
-    // ... sinais de controle
     reg exmem_reset;
     reg [2:0] exmem_branch_op;
     reg exmem_mem_to_reg;
@@ -47,8 +44,7 @@ module cpu (
     reg exmem_mem_read;
     reg exmem_mem_write;
     reg [31:0] exmem_branch_target;
-    /* //TODO: Substituir isso aqui pelos nomes explícitos das flags conforme
-     * //TODO: for necessário (ex.: zero, negative, overflow, carry) */
+    //TODO: Substituir pelos nomes explícitos das flags conforme necessário (ex.: zero, negative, overflow, carry)
     reg [ 3:0] exmem_flags;
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
@@ -63,18 +59,14 @@ module cpu (
 
     reg [31:0] wb_data; // conectado do mux do WB para escrita no banco de registradores
 
-    // Control Unit e Hazard Unit
     reg pc_write;
-    reg ifid_write;
-    // TODO: Gerar sinais de controle ID/EX a partir da instrução decodificada
-
-    // Forwarding Unit
-    // TODO: A fazer.
 
     /***************************************************************************
      * Instruction Fetch (IF) stage
      **************************************************************************/
     reg [31:0] pc;
+
+    // TODO: Memory Access Control e Hazard Unit
 
     assign mmu_write_enable = 0;
     assign mmu_read_enable = 1;
@@ -301,8 +293,10 @@ module cpu (
         .alu_output_result(alu_out) // Wire always required in modules output
     );
 
+    // TODO: Forwarding Unit.
+
     assign alu_input_a = idex_data_read_1;
-    assign alu_input_b = idex_alu_src == `ALU_SRC_FROM_REG ? idex_data_read_2 : idex_imm;
+    assign alu_input_b = (idex_alu_src == `ALU_SRC_FROM_REG) ? idex_data_read_2 : idex_imm;
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n || exmem_reset) begin
