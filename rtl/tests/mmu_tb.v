@@ -44,6 +44,7 @@ module mmu_tb();
         address = 0;
         data_in = 0;
 
+        #2;
         while(mem_ready !== 1) #2;
 
         if (data_out == 32'h00200293)
@@ -66,6 +67,7 @@ module mmu_tb();
         address = 32'h01000000; // First address of RAM
         data_in = 32'h69BABACA;
 
+        #2;
         while(mem_ready !== 1) #2;
 
         write_enable = 0;
@@ -87,6 +89,8 @@ module mmu_tb();
     initial begin
         $display("memory_control_tb: starting tests");
 
+        reset_n = 1;
+        #1;
         reset_n = 0;
         #1;
         reset_n = 1;

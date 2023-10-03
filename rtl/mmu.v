@@ -175,139 +175,125 @@ module mmu #(
                 mem_write_data[ 7: 0] = mem_read_data_1[7:0];
                 mem_write_data[15: 8] = mem_read_data_1[15:8];
                 mem_write_data[23:16] = mem_read_data_1[23:16];
-                mem_write_data[23:16] = data_in[7:0];
+                mem_write_data[31:24] = data_in[7:0];
             end
         endcase
     end
 
-    localparam STATE_IDLE               = 4'd0;
-    localparam STATE_MEM_WRITE_COMMIT   = 4'd1;
-    localparam STATE_ALIGNED_READ       = 4'd2;
-    localparam STATE_ALIGNED_WRITE      = 4'd3;
-    localparam STATE_UNALIGNED_READ1    = 4'd5;
-    localparam STATE_UNALIGNED_READ2    = 4'd6;
-    localparam STATE_UNALIGNED_WRITE1   = 4'd7;
-    localparam STATE_UNALIGNED_WRITE2   = 4'd8;
-    localparam STATE_UNALIGNED_WRITE3   = 4'd9;
-    localparam STATE_UNALIGNED_WRITE4   = 4'd10;
+    localparam STATE_READY              = 3'd0;
+    localparam STATE_ALIGNED_WRITE      = 3'd1;
+    localparam STATE_UNALIGNED_READ     = 3'd2;
+    localparam STATE_UNALIGNED_WRITE1   = 3'd3;
+    localparam STATE_UNALIGNED_WRITE2   = 3'd4;
+    localparam STATE_UNALIGNED_WRITE3   = 3'd5;
+    localparam STATE_UNALIGNED_WRITE4   = 3'd6;
 
-    reg [3:0] current_state = STATE_IDLE;
+    reg [2:0] current_state = STATE_READY;
 
+    // Selecionar sinais de controle
     always @(*) begin
+        data_in_aux = data_in;
         address_aux = address;
-
-        if(current_state == STATE_UNALIGNED_READ2) begin
-            address_aux = address + 4;
-        end
-    end
-
-    // Realiza operações de leitura/escrita em múltiplos ciclos
-    always @(posedge clk, negedge reset_n) begin
-        data_in_aux <= data_in;
-        address_aux <= address;
-        read_enable_aux <= 0;
-        write_enable_aux <= 0;
-        mem_ready <= 0;
-
-        if (!reset_n) begin
-            mem_read_data_2 <= 0;
-            current_state <= STATE_IDLE;
-        end else begin
+        read_enable_aux = 0;
+        write_enable_aux = 0;
 
         case (current_state)
-            STATE_IDLE: begin
+            STATE_READY: begin
                 if (write_enable && aligned_access) begin
                     if (mem_data_width == `MMU_WIDTH_WORD) begin
                         // Se for escrita de WORD, apenas escrever o data_in
-                        read_enable_aux <= read_enable;
-                        write_enable_aux <= 1;
-                        data_in_aux <= data_in;
-                        current_state <= STATE_MEM_WRITE_COMMIT;
+                        read_enable_aux = read_enable;
+                        write_enable_aux = 1;
                     end else begin
                         // Se for escrita de HALF ou BYTE, primeiro ler a palavra inteira
-                        read_enable_aux <= 1;
-                        write_enable_aux <= 0;
-                        current_state <= STATE_ALIGNED_WRITE;
+                        read_enable_aux = 1;
+                        write_enable_aux = 0;
                     end
                 end
 
                 else if (write_enable && !aligned_access) begin
-                    current_state <= STATE_UNALIGNED_WRITE1;
+                    address_aux = address + 4;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
 
                 else if (read_enable && aligned_access) begin
-                    read_enable_aux <= 1;
-                    write_enable_aux <= 0;
-                    current_state <= STATE_ALIGNED_READ;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
 
                 else if (read_enable && !aligned_access) begin
-                    current_state <= STATE_UNALIGNED_READ1;
+                    address_aux = address + 4;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
-
-                else begin
-                    // mem_ready <= 1; // TODO: Descomentar para mem_ready ficar continuamente ligado enquanto a mmu está disponível
-                    current_state <= STATE_IDLE;
-                end
-            end
-
-            STATE_MEM_WRITE_COMMIT: begin
-                mem_ready <= 1;
-                current_state <= STATE_IDLE;
-            end
-
-            STATE_ALIGNED_READ: begin
-                mem_ready <= 1;
-                current_state <= STATE_IDLE;
             end
 
             STATE_ALIGNED_WRITE: begin
-                read_enable_aux <= 0;
-                write_enable_aux <= 1;
-                data_in_aux <= mem_write_data;
-                current_state <= STATE_MEM_WRITE_COMMIT;
+                read_enable_aux = 0;
+                write_enable_aux = 1;
+                data_in_aux = mem_write_data;
             end
 
-            // TODO: Terminar de implementar acesso desalinhado à memória (não requerido para o propósito do trabalho)
-            STATE_UNALIGNED_READ1: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                mem_read_data_2 <= data_out_aux;
-                current_state <= STATE_UNALIGNED_READ2;
-            end
-
-            STATE_UNALIGNED_READ2: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                current_state <= STATE_IDLE;
-            end
-
-            STATE_UNALIGNED_WRITE1: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                current_state <= STATE_UNALIGNED_WRITE2;
-            end
-
-            STATE_UNALIGNED_WRITE2: begin
-                data_in_aux <= data_in;
-                current_state <= STATE_UNALIGNED_WRITE3;
-            end
-
-            STATE_UNALIGNED_WRITE3: begin
-                current_state <= STATE_UNALIGNED_WRITE4;
-            end
-
-            STATE_UNALIGNED_WRITE4: begin
-                current_state <= STATE_IDLE;
+            STATE_UNALIGNED_READ: begin
+                read_enable_aux = 1;
+                write_enable_aux = 0;
             end
 
             default: begin
-                current_state <= STATE_IDLE;
+                ; // Fazer nada
             end
-            // end TODO
-
         endcase
+    end
 
+    // Realiza operações de leitura/escrita em múltiplos ciclos
+    always @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            mem_ready <= 1;
+            mem_read_data_2 <= 0;
+            current_state <= STATE_READY;
+        end else begin
+            case (current_state)
+                STATE_READY: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+
+                    if (write_enable && aligned_access && (mem_data_width != `MMU_WIDTH_WORD)) begin
+                        mem_ready <= 0;
+                        current_state <= STATE_ALIGNED_WRITE;
+                    end
+                    else if (write_enable && !aligned_access) begin
+                        mem_ready <= 0;
+                        current_state <= STATE_UNALIGNED_WRITE1;
+                    end
+                    else if (read_enable && !aligned_access) begin
+                        mem_read_data_2 <= data_out_aux;
+                        mem_ready <= 0;
+                        current_state <= STATE_UNALIGNED_READ;
+                    end
+                end
+
+                STATE_ALIGNED_WRITE: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+
+                STATE_UNALIGNED_READ: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+
+                // TODO: Terminar de implementar acesso desalinhado à memória (não requerido para o propósito do trabalho)
+                STATE_UNALIGNED_WRITE1: begin
+                    current_state <= STATE_UNALIGNED_WRITE2;
+                end
+                // end TODO
+
+                default: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+            endcase
         end
     end
 
