@@ -24,7 +24,7 @@ module register_file_tb;
     end
 
     // Estímulos (inputs) para o módulo
-    task Teste(); 
+    task Teste();
     begin
         clk = 0;
         #10;
@@ -38,7 +38,7 @@ module register_file_tb;
         read_reg2 = 5'b00000;
         #10;
 
-        
+
         if (write_data === read_data1) begin
             $display("SUCCESS: Test 1 - Escrita e leitura básica");
         end else begin
@@ -54,7 +54,7 @@ module register_file_tb;
         read_reg1 = 5'b00100;
         read_reg2 = 5'b00000;
         #10;
-        
+
         if (write_data === read_data1) begin
             $display("SUCCESS: Test 2 - Escrita em um registrador diferente e leitura no mesmo registrador");
         end else begin
@@ -124,7 +124,7 @@ module register_file_tb;
         $finish;
     end
     endtask
-    
+
     initial begin
         Teste();
     end

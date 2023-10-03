@@ -1,10 +1,10 @@
 // TODO: Tentar implementar de forma combinacional
 
 module alu_module (
-    input  [3:0]   alu_input_op, 
+    input  [3:0]   alu_input_op,
     input  [31:0]  alu_input_a,
     input  [31:0]  alu_input_b,
-    
+
     output [31:0]  alu_output_result
 );
 

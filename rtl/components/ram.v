@@ -1,4 +1,4 @@
-// TODO: implementar teste da RAM 
+// TODO: implementar teste da RAM
 module ram #(
     parameter ADDR_WIDTH = 8    // 256×4B = 1 KiB
 ) (

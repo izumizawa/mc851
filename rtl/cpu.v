@@ -29,7 +29,7 @@ module cpu (
     reg idex_mem_write;
     reg idex_mem_to_reg;
     reg idex_alu_src;
-    reg [ 3:0] idex_alu_op; 
+    reg [ 3:0] idex_alu_op;
     // TODO: Ajustar conforme implementação da ALU e Pipeline
     reg [31:0] idex_data_read_1;
     reg [31:0] idex_data_read_2;
@@ -94,7 +94,7 @@ module cpu (
             exmem_reset <= 0;
             ifid_pc <= pc;
 
-            case (exmem_branch_op) 
+            case (exmem_branch_op)
                 `NOT_BRANCH: begin
                     if(mmu_mem_ready) begin
                         pc <= pc + 4;
@@ -129,7 +129,7 @@ module cpu (
     wire [12:0] b_imm;
     wire [31:0] s_imm;
     wire [31:0] shamt;
- 
+
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
@@ -188,34 +188,34 @@ module cpu (
             idex_data_read_2 <= read_data_2;
         end
 
-        case (opcode) 
+        case (opcode)
             // R-type instructions
-            7'b0110011: begin 
+            7'b0110011: begin
                 idex_reg_write <=  1; // True
                 idex_alu_src <= `ALU_SRC_FROM_REG;
-                if (funct3 == 3'b000) begin 
-                    if (funct7 == 7'b0000000) begin 
+                if (funct3 == 3'b000) begin
+                    if (funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_ADD;
-                    end else begin 
+                    end else begin
                         idex_alu_op <= `ALU_SUB;
-                    end 
+                    end
                 end else if (funct3 == 3'b001) begin
-                    idex_alu_op <= `ALU_SLL; 
-                end else if (funct3 == 3'b010) begin 
+                    idex_alu_op <= `ALU_SLL;
+                end else if (funct3 == 3'b010) begin
                     idex_alu_op <= `ALU_SLT;
                 end else if (funct3 == 3'b011) begin
                     idex_alu_op <= `ALU_SLTU;
-                end else if (funct3 == 3'b100) begin 
+                end else if (funct3 == 3'b100) begin
                     idex_alu_op <= `ALU_XOR;
                 end else if (funct3 == 3'b101) begin
                     if (funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_SRL;
-                    end else begin 
+                    end else begin
                         idex_alu_op <= `ALU_SRA;
-                    end 
+                    end
                 end else if (funct3 == 3'b110) begin
                     idex_alu_op <= `ALU_OR;
-                end else if (funct3 == 3'b111) begin 
+                end else if (funct3 == 3'b111) begin
                     idex_alu_op <= `ALU_AND;
                 end
             end
@@ -290,7 +290,7 @@ module cpu (
      **************************************************************************/
     wire [31:0] alu_input_a;
     wire [31:0] alu_input_b;
-    
+
     wire [31:0] alu_out;
 
     // Modules instantiations
