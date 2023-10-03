@@ -3,7 +3,7 @@
 `include "components/rom.v"
 
 module mmu #(
-    parameter ROMFILE="test.mem"
+    parameter ROMFILE=""
 ) (
     input clk, reset_n,
     input write_enable,
@@ -24,9 +24,9 @@ module mmu #(
     wire  [ROM_ADDR_WIDTH-1:0] rom_address;
     wire [31:0] rom_data_out;
 
-    rom #( 
+    rom #(
         .ADDR_WIDTH(ROM_ADDR_WIDTH),
-        .ROMFILE(ROMFILE) 
+        .ROMFILE(ROMFILE)
     ) rom_inst (
         .clk            (clk            ),
         .read_enable    (rom_read_enable),
@@ -62,8 +62,9 @@ module mmu #(
     reg read_enable_aux;        // Habilita leitura em um único dispositivo
     reg write_enable_aux;       // Habilita escrita em um único dispositivo
     wire [ 1:0] byte_offset;    // Offset do byte dentro da word
-    wire [31:0] mem_read1;
-    reg [31:0] mem_read2;       // Primeiro valor lido da memória caso seja feito acesso desalinhado
+    reg [31:0] mem_write_data;
+    wire [31:0] mem_read_data_1;
+    reg [31:0] mem_read_data_2; // Primeiro valor lido da memória caso seja feito acesso desalinhado
     reg [31:0] mem_read_unsigned;
     wire aligned_access;
 
@@ -72,7 +73,7 @@ module mmu #(
     assign rom_address = address_aux[ROM_ADDR_WIDTH+1:2];
     assign ram_address = address_aux[RAM_ADDR_WIDTH+1:2];
 
-    assign mem_read1 = data_out_aux;
+    assign mem_read_data_1 = data_out_aux;
     assign byte_offset = address[1:0];
     assign aligned_access = (byte_offset + mem_data_width < 4) ? 1 : 0;
 
@@ -80,7 +81,7 @@ module mmu #(
      * ROM: 0x00000000 .. 0x00FFFFFF
      * RAM: 0x01000000 .. 0x01FFFFFF
      * ... RESERVADO: 0x01000000 .. 0xFFFFFFFF
-     * 
+     *
      * Terminologia:
      * RANGE: Número de bits de endereçamento disponíveis pro dispositivo.
      * SELECT: (32 - #RANGE) bits p/ selecionar o dispositivo.
@@ -108,31 +109,31 @@ module mmu #(
     end
 
     always @(*) begin
-        // Recuperar dado em memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
+        // Recuperar dado da memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
         case (byte_offset)
             0: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[7:0];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[15: 8] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read1[23:16] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read1[31:24] : 8'b0;
-            end 
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[7:0];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[15: 8] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_1[23:16] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_1[31:24] : 8'b0;
+            end
             1: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[15:8];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[23:16] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read1[31:24] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[ 7: 0] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[15:8];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[23:16] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_1[31:24] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[ 7: 0] : 8'b0;
             end
             2: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[23:16];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[31:24] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read2[ 7: 0] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[15: 8] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[23:16];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[31:24] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_2[ 7: 0] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[15: 8] : 8'b0;
             end
             3: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[31:24];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read2[ 7: 0] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read2[15: 8] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[23:16] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[31:24];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_2[ 7: 0] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_2[15: 8] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[23:16] : 8'b0;
             end
         endcase
 
@@ -147,6 +148,36 @@ module mmu #(
         end else begin
             data_out = mem_read_unsigned;
         end
+    end
+
+    always @(*) begin
+        // Palavra a ser escrita na memória de maneira a preservar os bytes não modificados, se for escrita de byte/half.
+        case (byte_offset)
+            0: begin
+                mem_write_data[ 7: 0] = data_in[7:0];
+                mem_write_data[15: 8] = (mem_data_width >= 1) ? data_in[15: 8] : mem_read_data_1[15: 8];
+                mem_write_data[23:16] = (mem_data_width >= 2) ? data_in[23:16] : mem_read_data_1[23:16];
+                mem_write_data[31:24] = mem_read_data_1[31:24];
+            end
+            1: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = data_in[7:0];
+                mem_write_data[23:16] = (mem_data_width >= 1) ? data_in[15: 8] : mem_read_data_1[23:16];
+                mem_write_data[31:24] = (mem_data_width >= 2) ? data_in[23:16] : mem_read_data_1[31:24];
+            end
+            2: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = mem_read_data_1[15:8];
+                mem_write_data[23:16] = data_in[7:0];
+                mem_write_data[31:24] = (mem_data_width >= 1) ? data_in[15:8] : mem_read_data_1[31:24];
+            end
+            3: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = mem_read_data_1[15:8];
+                mem_write_data[23:16] = mem_read_data_1[23:16];
+                mem_write_data[23:16] = data_in[7:0];
+            end
+        endcase
     end
 
     localparam STATE_IDLE               = 4'd0;
@@ -164,7 +195,7 @@ module mmu #(
 
     always @(*) begin
         address_aux = address;
-    
+
         if(current_state == STATE_UNALIGNED_READ2) begin
             address_aux = address + 4;
         end
@@ -179,7 +210,7 @@ module mmu #(
         mem_ready <= 0;
 
         if (!reset_n) begin
-            mem_read2 <= 0;
+            mem_read_data_2 <= 0;
             current_state <= STATE_IDLE;
         end else begin
 
@@ -233,34 +264,7 @@ module mmu #(
             STATE_ALIGNED_WRITE: begin
                 read_enable_aux <= 0;
                 write_enable_aux <= 1;
-
-                case (byte_offset)
-                    0: begin
-                        data_in_aux[ 7: 0] <= data_in[7:0];
-                        data_in_aux[15: 8] <= (mem_data_width >= 1) ? data_in[15: 8] : mem_read1[15: 8];
-                        data_in_aux[23:16] <= (mem_data_width >= 2) ? data_in[23:16] : mem_read1[23:16];
-                        data_in_aux[31:24] <= mem_read1[31:24];
-                    end
-                    1: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= data_in[7:0];
-                        data_in_aux[23:16] <= (mem_data_width >= 1) ? data_in[15: 8] : mem_read1[23:16];
-                        data_in_aux[31:24] <= (mem_data_width >= 2) ? data_in[23:16] : mem_read1[31:24];
-                    end
-                    2: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= mem_read1[15:8];
-                        data_in_aux[23:16] <= data_in[7:0];
-                        data_in_aux[31:24] <= (mem_data_width >= 1) ? data_in[15:8] : mem_read1[31:24];
-                    end
-                    3: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= mem_read1[15:8];
-                        data_in_aux[23:16] <= mem_read1[23:16];
-                        data_in_aux[23:16] <= data_in[7:0];
-                    end
-                endcase
-
+                data_in_aux <= mem_write_data;
                 current_state <= STATE_MEM_WRITE_COMMIT;
             end
 
@@ -268,7 +272,7 @@ module mmu #(
             STATE_UNALIGNED_READ1: begin
                 read_enable_aux <= 1;
                 write_enable_aux <= 0;
-                mem_read2 <= data_out_aux;
+                mem_read_data_2 <= data_out_aux;
                 current_state <= STATE_UNALIGNED_READ2;
             end
 
