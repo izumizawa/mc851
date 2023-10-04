@@ -1,8 +1,6 @@
 `include "../define.v"
 
 module mmu_tb();
-
-    // Sinais de teste
     reg clk;
     reg reset_n;
     reg write_enable;
@@ -94,6 +92,7 @@ module mmu_tb();
         reset_n = 0;
         #1;
         reset_n = 1;
+        #1;
 
         test_ram_read_and_write();
         test_rom_read();
