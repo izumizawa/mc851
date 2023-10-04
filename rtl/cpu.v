@@ -1,4 +1,3 @@
-// Top model. Describes the whole CPU and its components.
 `include "define.v"
 `include "../components/register_file.v"
 `include "../components/alu_module.v"
@@ -17,7 +16,7 @@ module cpu (
 );
     // IF/ID Register
     reg [31:0] ifid_pc;
-    reg [31:0] ifid_ir;
+    wire [31:0] ifid_ir;
 
     // ID/EX Register
     reg [31:0] idex_pc;
@@ -65,6 +64,7 @@ module cpu (
      **************************************************************************/
     reg [31:0] pc;
     reg if_stall;
+    reg branch_taken;
 
     // TODO: Memory Access Control e Hazard Unit
 
@@ -75,36 +75,43 @@ module cpu (
 
     assign mmu_address = pc;
     assign mmu_data_in = 0; // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
+    assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
+
+    always @(*) begin
+        case (exmem_branch_op)
+            `NOT_BRANCH: begin
+                idex_reset = 0;
+                exmem_reset = 0;
+                branch_taken = 0;
+            end
+            `BRANCH_BEQ: begin
+                if (exmem_alu_out == 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            //TODO: BGE, BGEU, BLT, BLTU, BNE, ...
+            default: begin
+                idex_reset = 0;
+                exmem_reset = 0;
+                branch_taken = 0;
+            end
+        endcase
+    end
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
             pc <= 0;
             ifid_pc <= 32'b0;
-            ifid_ir <= `RISCV_NOP;
         end else begin
-            idex_reset <= 0;
-            exmem_reset <= 0;
             ifid_pc <= pc;
 
-            case (exmem_branch_op)
-                `NOT_BRANCH: begin
-                    if(mmu_mem_ready) begin
-                        pc <= pc + 4;
-                        ifid_ir <= mmu_data_out;
-                    end else begin
-                        ifid_ir <= `RISCV_NOP;
-                    end
-                end
-                `BRANCH_BEQ: begin
-                    if (exmem_alu_out == 32'b0) begin
-                        pc <= exmem_branch_target;
-                        idex_reset <= 1;
-                        exmem_reset <= 1;
-                    end else begin
-                        pc <= pc + 4;
-                    end
-                end
-            endcase
+            if (branch_taken) begin
+                pc <= exmem_branch_target;
+            end else begin
+                pc <= pc + 4;
+            end
         end
     end
     // -------------------------------------------------------------------------
@@ -120,14 +127,16 @@ module cpu (
     wire [12:0] id_b_imm;
     wire [31:0] id_s_imm;
     wire [31:0] id_shamt;
+    wire [ 4:0] id_rs1;
+	wire [ 4:0] id_rs2;
 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
     register_file regfile(
         .clk(clk),
-        .read_reg1(idex_rs1),
-        .read_reg2(idex_rs2),
+        .read_reg1(id_rs1),
+        .read_reg2(id_rs2),
         .write_reg(memwb_rd),
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
@@ -139,6 +148,8 @@ module cpu (
     assign id_opcode = ifid_ir[6:0];
     assign id_funct7 = ifid_ir[31:25];
     assign id_funct3 = ifid_ir[14:12];
+    assign id_rs1 = ifid_ir[19:15];
+    assign id_rs2 = ifid_ir[24:20];
 
     // Default i_imm
     assign id_i_imm = { { 20{ ifid_ir[31] } }, ifid_ir[31:20] };
@@ -167,8 +178,8 @@ module cpu (
         end else begin
 
         idex_pc <= ifid_pc;
-        idex_rs1 <= ifid_ir[19:15];
-        idex_rs2 <= ifid_ir[24:20];
+        idex_rs1 <= id_rs1;
+        idex_rs2 <= id_rs2;
         idex_rd <= ifid_ir[11:7];
         idex_imm <= { { 20 { id_i_imm[11] } }, id_i_imm[11:0] };
         idex_mem_to_reg <= 0;
