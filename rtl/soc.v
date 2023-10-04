@@ -1,7 +1,9 @@
 `include "cpu.v"
 `include "mmu.v"
 
-module soc (
+module soc #(
+    parameter ROMFILE=""
+) (
     input clk,
     input reset_n
 );
@@ -27,7 +29,7 @@ module soc (
         .mmu_data_in(mmu_data_in)
     );
 
-    mmu #( .ROMFILE("../../src/memdump/beq.mem")) mmu_inst (
+    mmu #( .ROMFILE(ROMFILE)) mmu_inst (
         .clk(clk),
         .reset_n(reset_n),
         .write_enable(mmu_write_enable),

@@ -1,14 +1,14 @@
-module soc_tb();
+module addi_tb();
     reg clk;
     reg reset_n;
 
-    soc soc_inst(
+    soc #( .ROMFILE("../../src/memdump/addi.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
 
     initial begin
-        $dumpfile("soc_wave.vcd");
+        $dumpfile("addi_wave.vcd");
         $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
@@ -16,27 +16,26 @@ module soc_tb();
 
     task test_addi();
     begin
-        $write("  test_write_and_read: ");
+        $write("  test_addi: ");
 
         #10; // wait for addi to complete
         if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2)
             $display(" passed!");
         else
-            $error("    data_out should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
 
         #8;
     end
     endtask
 
      initial begin
-        $display("soc_tb: starting tests");
+        $display("addi_tb: starting tests");
 
         reset_n = 1;
         #1;
         reset_n = 0;
         #1;
         reset_n = 1;
-        #1;
 
         test_addi();
 

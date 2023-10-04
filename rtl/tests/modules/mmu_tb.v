@@ -19,7 +19,7 @@ module mmu_tb();
         forever #1 clk = ~clk;
     end
 
-    mmu #( .ROMFILE("../../src/memdump/test.mem")) mmu_inst (
+    mmu #( .ROMFILE("../../src/memdump/addi.mem")) mmu_inst (
         .clk(clk),
         .reset_n(reset_n),
         .write_enable(write_enable),
@@ -92,7 +92,6 @@ module mmu_tb();
         reset_n = 0;
         #1;
         reset_n = 1;
-        #1;
 
         test_ram_read_and_write();
         test_rom_read();
