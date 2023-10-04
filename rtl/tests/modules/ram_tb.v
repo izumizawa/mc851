@@ -31,7 +31,7 @@ module ram_component_tb();
         data_in = 0;
         write_enable = 4'b0000;
         read_enable = 0;
-    
+
         #10
         write_enable = 4'b0001;
         address = 10;
@@ -64,8 +64,8 @@ module ram_component_tb();
         data_in = 0;
         write_enable = 4'b0000;
         read_enable = 0;
-    
-        #10 
+
+        #10
         write_enable = 4'b0001;
         address = 10;
         data_in = 42;

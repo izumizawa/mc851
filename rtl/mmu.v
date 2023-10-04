@@ -3,7 +3,7 @@
 `include "components/rom.v"
 
 module mmu #(
-    parameter ROMFILE="test.mem"
+    parameter ROMFILE=""
 ) (
     input clk, reset_n,
     input write_enable,
@@ -24,9 +24,9 @@ module mmu #(
     wire  [ROM_ADDR_WIDTH-1:0] rom_address;
     wire [31:0] rom_data_out;
 
-    rom #( 
+    rom #(
         .ADDR_WIDTH(ROM_ADDR_WIDTH),
-        .ROMFILE(ROMFILE) 
+        .ROMFILE(ROMFILE)
     ) rom_inst (
         .clk            (clk            ),
         .read_enable    (rom_read_enable),
@@ -62,8 +62,9 @@ module mmu #(
     reg read_enable_aux;        // Habilita leitura em um único dispositivo
     reg write_enable_aux;       // Habilita escrita em um único dispositivo
     wire [ 1:0] byte_offset;    // Offset do byte dentro da word
-    wire [31:0] mem_read1;
-    reg [31:0] mem_read2;       // Primeiro valor lido da memória caso seja feito acesso desalinhado
+    reg [31:0] mem_write_data;
+    wire [31:0] mem_read_data_1;
+    reg [31:0] mem_read_data_2; // Primeiro valor lido da memória caso seja feito acesso desalinhado
     reg [31:0] mem_read_unsigned;
     wire aligned_access;
 
@@ -72,7 +73,7 @@ module mmu #(
     assign rom_address = address_aux[ROM_ADDR_WIDTH+1:2];
     assign ram_address = address_aux[RAM_ADDR_WIDTH+1:2];
 
-    assign mem_read1 = data_out_aux;
+    assign mem_read_data_1 = data_out_aux;
     assign byte_offset = address[1:0];
     assign aligned_access = (byte_offset + mem_data_width < 4) ? 1 : 0;
 
@@ -80,7 +81,7 @@ module mmu #(
      * ROM: 0x00000000 .. 0x00FFFFFF
      * RAM: 0x01000000 .. 0x01FFFFFF
      * ... RESERVADO: 0x01000000 .. 0xFFFFFFFF
-     * 
+     *
      * Terminologia:
      * RANGE: Número de bits de endereçamento disponíveis pro dispositivo.
      * SELECT: (32 - #RANGE) bits p/ selecionar o dispositivo.
@@ -108,31 +109,31 @@ module mmu #(
     end
 
     always @(*) begin
-        // Recuperar dado em memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
+        // Recuperar dado da memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
         case (byte_offset)
             0: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[7:0];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[15: 8] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read1[23:16] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read1[31:24] : 8'b0;
-            end 
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[7:0];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[15: 8] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_1[23:16] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_1[31:24] : 8'b0;
+            end
             1: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[15:8];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[23:16] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read1[31:24] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[ 7: 0] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[15:8];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[23:16] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_1[31:24] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[ 7: 0] : 8'b0;
             end
             2: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[23:16];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read1[31:24] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read2[ 7: 0] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[15: 8] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[23:16];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_1[31:24] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_2[ 7: 0] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[15: 8] : 8'b0;
             end
             3: begin
-                mem_read_unsigned[ 7: 0] = mem_read1[31:24];
-                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read2[ 7: 0] : 8'b0;
-                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read2[15: 8] : 8'b0;
-                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read2[23:16] : 8'b0;
+                mem_read_unsigned[ 7: 0] = mem_read_data_1[31:24];
+                mem_read_unsigned[15: 8] = (mem_data_width >= 1) ? mem_read_data_2[ 7: 0] : 8'b0;
+                mem_read_unsigned[23:16] = (mem_data_width >= 2) ? mem_read_data_2[15: 8] : 8'b0;
+                mem_read_unsigned[31:24] = (mem_data_width == 3) ? mem_read_data_2[23:16] : 8'b0;
             end
         endcase
 
@@ -149,161 +150,150 @@ module mmu #(
         end
     end
 
-    localparam STATE_IDLE               = 4'd0;
-    localparam STATE_MEM_WRITE_COMMIT   = 4'd1;
-    localparam STATE_ALIGNED_READ       = 4'd2;
-    localparam STATE_ALIGNED_WRITE      = 4'd3;
-    localparam STATE_UNALIGNED_READ1    = 4'd5;
-    localparam STATE_UNALIGNED_READ2    = 4'd6;
-    localparam STATE_UNALIGNED_WRITE1   = 4'd7;
-    localparam STATE_UNALIGNED_WRITE2   = 4'd8;
-    localparam STATE_UNALIGNED_WRITE3   = 4'd9;
-    localparam STATE_UNALIGNED_WRITE4   = 4'd10;
-
-    reg [3:0] current_state = STATE_IDLE;
-
     always @(*) begin
-        address_aux = address;
-    
-        if(current_state == STATE_UNALIGNED_READ2) begin
-            address_aux = address + 4;
-        end
+        // Palavra a ser escrita na memória de maneira a preservar os bytes não modificados, se for escrita de byte/half.
+        case (byte_offset)
+            0: begin
+                mem_write_data[ 7: 0] = data_in[7:0];
+                mem_write_data[15: 8] = (mem_data_width >= 1) ? data_in[15: 8] : mem_read_data_1[15: 8];
+                mem_write_data[23:16] = (mem_data_width >= 2) ? data_in[23:16] : mem_read_data_1[23:16];
+                mem_write_data[31:24] = mem_read_data_1[31:24];
+            end
+            1: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = data_in[7:0];
+                mem_write_data[23:16] = (mem_data_width >= 1) ? data_in[15: 8] : mem_read_data_1[23:16];
+                mem_write_data[31:24] = (mem_data_width >= 2) ? data_in[23:16] : mem_read_data_1[31:24];
+            end
+            2: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = mem_read_data_1[15:8];
+                mem_write_data[23:16] = data_in[7:0];
+                mem_write_data[31:24] = (mem_data_width >= 1) ? data_in[15:8] : mem_read_data_1[31:24];
+            end
+            3: begin
+                mem_write_data[ 7: 0] = mem_read_data_1[7:0];
+                mem_write_data[15: 8] = mem_read_data_1[15:8];
+                mem_write_data[23:16] = mem_read_data_1[23:16];
+                mem_write_data[31:24] = data_in[7:0];
+            end
+        endcase
     end
 
-    // Realiza operações de leitura/escrita em múltiplos ciclos
-    always @(posedge clk, negedge reset_n) begin
-        data_in_aux <= data_in;
-        address_aux <= address;
-        read_enable_aux <= 0;
-        write_enable_aux <= 0;
-        mem_ready <= 0;
+    localparam STATE_READY              = 3'd0;
+    localparam STATE_ALIGNED_WRITE      = 3'd1;
+    localparam STATE_UNALIGNED_READ     = 3'd2;
+    localparam STATE_UNALIGNED_WRITE1   = 3'd3;
+    localparam STATE_UNALIGNED_WRITE2   = 3'd4;
+    localparam STATE_UNALIGNED_WRITE3   = 3'd5;
+    localparam STATE_UNALIGNED_WRITE4   = 3'd6;
 
-        if (!reset_n) begin
-            mem_read2 <= 0;
-            current_state <= STATE_IDLE;
-        end else begin
+    reg [2:0] current_state = STATE_READY;
+
+    // Selecionar sinais de controle
+    always @(*) begin
+        data_in_aux = data_in;
+        address_aux = address;
+        read_enable_aux = 0;
+        write_enable_aux = 0;
 
         case (current_state)
-            STATE_IDLE: begin
+            STATE_READY: begin
                 if (write_enable && aligned_access) begin
                     if (mem_data_width == `MMU_WIDTH_WORD) begin
                         // Se for escrita de WORD, apenas escrever o data_in
-                        read_enable_aux <= read_enable;
-                        write_enable_aux <= 1;
-                        data_in_aux <= data_in;
-                        current_state <= STATE_MEM_WRITE_COMMIT;
+                        read_enable_aux = read_enable;
+                        write_enable_aux = 1;
                     end else begin
                         // Se for escrita de HALF ou BYTE, primeiro ler a palavra inteira
-                        read_enable_aux <= 1;
-                        write_enable_aux <= 0;
-                        current_state <= STATE_ALIGNED_WRITE;
+                        read_enable_aux = 1;
+                        write_enable_aux = 0;
                     end
                 end
 
                 else if (write_enable && !aligned_access) begin
-                    current_state <= STATE_UNALIGNED_WRITE1;
+                    address_aux = address + 4;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
 
                 else if (read_enable && aligned_access) begin
-                    read_enable_aux <= 1;
-                    write_enable_aux <= 0;
-                    current_state <= STATE_ALIGNED_READ;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
 
                 else if (read_enable && !aligned_access) begin
-                    current_state <= STATE_UNALIGNED_READ1;
+                    address_aux = address + 4;
+                    read_enable_aux = 1;
+                    write_enable_aux = 0;
                 end
-
-                else begin
-                    // mem_ready <= 1; // TODO: Descomentar para mem_ready ficar continuamente ligado enquanto a mmu está disponível
-                    current_state <= STATE_IDLE;
-                end
-            end
-
-            STATE_MEM_WRITE_COMMIT: begin
-                mem_ready <= 1;
-                current_state <= STATE_IDLE;
-            end
-
-            STATE_ALIGNED_READ: begin
-                mem_ready <= 1;
-                current_state <= STATE_IDLE;
             end
 
             STATE_ALIGNED_WRITE: begin
-                read_enable_aux <= 0;
-                write_enable_aux <= 1;
-
-                case (byte_offset)
-                    0: begin
-                        data_in_aux[ 7: 0] <= data_in[7:0];
-                        data_in_aux[15: 8] <= (mem_data_width >= 1) ? data_in[15: 8] : mem_read1[15: 8];
-                        data_in_aux[23:16] <= (mem_data_width >= 2) ? data_in[23:16] : mem_read1[23:16];
-                        data_in_aux[31:24] <= mem_read1[31:24];
-                    end
-                    1: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= data_in[7:0];
-                        data_in_aux[23:16] <= (mem_data_width >= 1) ? data_in[15: 8] : mem_read1[23:16];
-                        data_in_aux[31:24] <= (mem_data_width >= 2) ? data_in[23:16] : mem_read1[31:24];
-                    end
-                    2: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= mem_read1[15:8];
-                        data_in_aux[23:16] <= data_in[7:0];
-                        data_in_aux[31:24] <= (mem_data_width >= 1) ? data_in[15:8] : mem_read1[31:24];
-                    end
-                    3: begin
-                        data_in_aux[ 7: 0] <= mem_read1[7:0];
-                        data_in_aux[15: 8] <= mem_read1[15:8];
-                        data_in_aux[23:16] <= mem_read1[23:16];
-                        data_in_aux[23:16] <= data_in[7:0];
-                    end
-                endcase
-
-                current_state <= STATE_MEM_WRITE_COMMIT;
+                read_enable_aux = 0;
+                write_enable_aux = 1;
+                data_in_aux = mem_write_data;
             end
 
-            // TODO: Terminar de implementar acesso desalinhado à memória (não requerido para o propósito do trabalho)
-            STATE_UNALIGNED_READ1: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                mem_read2 <= data_out_aux;
-                current_state <= STATE_UNALIGNED_READ2;
-            end
-
-            STATE_UNALIGNED_READ2: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                current_state <= STATE_IDLE;
-            end
-
-            STATE_UNALIGNED_WRITE1: begin
-                read_enable_aux <= 1;
-                write_enable_aux <= 0;
-                current_state <= STATE_UNALIGNED_WRITE2;
-            end
-
-            STATE_UNALIGNED_WRITE2: begin
-                data_in_aux <= data_in;
-                current_state <= STATE_UNALIGNED_WRITE3;
-            end
-
-            STATE_UNALIGNED_WRITE3: begin
-                current_state <= STATE_UNALIGNED_WRITE4;
-            end
-
-            STATE_UNALIGNED_WRITE4: begin
-                current_state <= STATE_IDLE;
+            STATE_UNALIGNED_READ: begin
+                read_enable_aux = 1;
+                write_enable_aux = 0;
             end
 
             default: begin
-                current_state <= STATE_IDLE;
+                ; // Fazer nada
             end
-            // end TODO
-
         endcase
+    end
 
+    // Realiza operações de leitura/escrita em múltiplos ciclos
+    always @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            mem_ready <= 1;
+            mem_read_data_2 <= 0;
+            current_state <= STATE_READY;
+        end else begin
+            case (current_state)
+                STATE_READY: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+
+                    if (write_enable && aligned_access && (mem_data_width != `MMU_WIDTH_WORD)) begin
+                        mem_ready <= 0;
+                        current_state <= STATE_ALIGNED_WRITE;
+                    end
+                    else if (write_enable && !aligned_access) begin
+                        mem_ready <= 0;
+                        current_state <= STATE_UNALIGNED_WRITE1;
+                    end
+                    else if (read_enable && !aligned_access) begin
+                        mem_read_data_2 <= data_out_aux;
+                        mem_ready <= 0;
+                        current_state <= STATE_UNALIGNED_READ;
+                    end
+                end
+
+                STATE_ALIGNED_WRITE: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+
+                STATE_UNALIGNED_READ: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+
+                // TODO: Terminar de implementar acesso desalinhado à memória (não requerido para o propósito do trabalho)
+                STATE_UNALIGNED_WRITE1: begin
+                    current_state <= STATE_UNALIGNED_WRITE2;
+                end
+                // end TODO
+
+                default: begin
+                    mem_ready <= 1;
+                    current_state <= STATE_READY;
+                end
+            endcase
         end
     end
 
