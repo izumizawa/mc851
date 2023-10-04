@@ -59,12 +59,12 @@ module cpu (
 
     reg [31:0] wb_data; // conectado do mux do WB para escrita no banco de registradores
 
-    reg pc_write;
 
     /***************************************************************************
      * Instruction Fetch (IF) stage
      **************************************************************************/
     reg [31:0] pc;
+    reg if_stall;
 
     // TODO: Memory Access Control e Hazard Unit
 
@@ -113,14 +113,13 @@ module cpu (
     /***************************************************************************
      * Instruction Decode (ID) stage
      **************************************************************************/
-
-    wire [6:0] opcode;
-    wire [2:0] funct3;
-    wire [6:0] funct7;
-    wire [31:0] i_imm;
-    wire [12:0] b_imm;
-    wire [31:0] s_imm;
-    wire [31:0] shamt;
+    wire [6:0] id_opcode;
+    wire [2:0] id_funct3;
+    wire [6:0] id_funct7;
+    wire [31:0] id_i_imm;
+    wire [12:0] id_b_imm;
+    wire [31:0] id_s_imm;
+    wire [31:0] id_shamt;
 
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
@@ -137,16 +136,16 @@ module cpu (
     );
 
     // Assigns
-    assign opcode = ifid_ir[6:0];
-    assign funct7 = ifid_ir[31:25];
-    assign funct3 = ifid_ir[14:12];
+    assign id_opcode = ifid_ir[6:0];
+    assign id_funct7 = ifid_ir[31:25];
+    assign id_funct3 = ifid_ir[14:12];
 
     // Default i_imm
-    assign i_imm = { { 20{ ifid_ir[31] } }, ifid_ir[31:20] };
-    assign shamt = { 27'b0, ifid_ir[24:20] };
+    assign id_i_imm = { { 20{ ifid_ir[31] } }, ifid_ir[31:20] };
+    assign id_shamt = { 27'b0, ifid_ir[24:20] };
     // B-type b_imm
-    assign b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
-    assign s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
+    assign id_b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
+    assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n || idex_reset) begin
@@ -166,48 +165,48 @@ module cpu (
             idex_reg_write <= 0;
             idex_pc <= 0;
         end else begin
-            idex_pc <= ifid_pc;
-            idex_rs1 <= ifid_ir[19:15];
-            idex_rs2 <= ifid_ir[24:20];
-            idex_rd <= ifid_ir[11:7];
-            idex_imm <= { { 20 { i_imm[11] } }, i_imm[11:0] };
-            idex_mem_to_reg <= 0;
-            idex_reg_write <= 0;
-            idex_mem_read <= 0;
-            idex_mem_write <= 0;
-            idex_branch_op <= `NOT_BRANCH;
-            idex_data_read_1 <= read_data_1;
-            idex_data_read_2 <= read_data_2;
-        end
 
-        case (opcode)
+        idex_pc <= ifid_pc;
+        idex_rs1 <= ifid_ir[19:15];
+        idex_rs2 <= ifid_ir[24:20];
+        idex_rd <= ifid_ir[11:7];
+        idex_imm <= { { 20 { id_i_imm[11] } }, id_i_imm[11:0] };
+        idex_mem_to_reg <= 0;
+        idex_reg_write <= 0;
+        idex_mem_read <= 0;
+        idex_mem_write <= 0;
+        idex_branch_op <= `NOT_BRANCH;
+        idex_data_read_1 <= read_data_1;
+        idex_data_read_2 <= read_data_2;
+
+        case (id_opcode)
             // R-type instructions
             7'b0110011: begin
                 idex_reg_write <=  1; // True
                 idex_alu_src <= `ALU_SRC_FROM_REG;
-                if (funct3 == 3'b000) begin
-                    if (funct7 == 7'b0000000) begin
+                if (id_funct3 == 3'b000) begin
+                    if (id_funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_ADD;
                     end else begin
                         idex_alu_op <= `ALU_SUB;
                     end
-                end else if (funct3 == 3'b001) begin
+                end else if (id_funct3 == 3'b001) begin
                     idex_alu_op <= `ALU_SLL;
-                end else if (funct3 == 3'b010) begin
+                end else if (id_funct3 == 3'b010) begin
                     idex_alu_op <= `ALU_SLT;
-                end else if (funct3 == 3'b011) begin
+                end else if (id_funct3 == 3'b011) begin
                     idex_alu_op <= `ALU_SLTU;
-                end else if (funct3 == 3'b100) begin
+                end else if (id_funct3 == 3'b100) begin
                     idex_alu_op <= `ALU_XOR;
-                end else if (funct3 == 3'b101) begin
-                    if (funct7 == 7'b0000000) begin
+                end else if (id_funct3 == 3'b101) begin
+                    if (id_funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_SRL;
                     end else begin
                         idex_alu_op <= `ALU_SRA;
                     end
-                end else if (funct3 == 3'b110) begin
+                end else if (id_funct3 == 3'b110) begin
                     idex_alu_op <= `ALU_OR;
-                end else if (funct3 == 3'b111) begin
+                end else if (id_funct3 == 3'b111) begin
                     idex_alu_op <= `ALU_AND;
                 end
             end
@@ -216,25 +215,25 @@ module cpu (
             7'b0010011: begin
                 idex_reg_write <=  1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
-                idex_imm <= i_imm;
-                if (funct3 == 3'b000) begin
+                idex_imm <= id_i_imm;
+                if (id_funct3 == 3'b000) begin
                     idex_alu_op <= `ALU_ADD;
-                end else if (funct3 == 3'b010) begin
+                end else if (id_funct3 == 3'b010) begin
                     idex_alu_op <= `ALU_ADD;
-                end else if (funct3 == 3'b011) begin
+                end else if (id_funct3 == 3'b011) begin
                     idex_alu_op <= `ALU_SLT;
-                end else if (funct3 == 3'b100) begin
+                end else if (id_funct3 == 3'b100) begin
                     idex_alu_op <= `ALU_XOR;
-                end else if (funct3 == 3'b110) begin
+                end else if (id_funct3 == 3'b110) begin
                     idex_alu_op <= `ALU_OR;
-                end else if (funct3 == 3'b111) begin
+                end else if (id_funct3 == 3'b111) begin
                     idex_alu_op <= `ALU_AND;
-                end else if (funct3 == 3'b001) begin
-                    idex_imm <= shamt;
+                end else if (id_funct3 == 3'b001) begin
+                    idex_imm <= id_shamt;
                     idex_alu_op <= `ALU_SLL; //slli
-                end else if (funct3 == 3'b101) begin
-                    idex_imm <= shamt;
-                    if (funct7 == 7'b0000000) begin
+                end else if (id_funct3 == 3'b101) begin
+                    idex_imm <= id_shamt;
+                    if (id_funct7 == 7'b0000000) begin
                         idex_alu_op <= `ALU_SRL; //srli
                     end else begin
                         idex_alu_op <= `ALU_SRA; //srai
@@ -247,32 +246,33 @@ module cpu (
                 idex_mem_write <= 1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
                 idex_alu_op <= `ALU_ADD;
-                idex_imm <= s_imm;
+                idex_imm <= id_s_imm;
             end
 
             // B-type instructions
             7'b1100011: begin
-                idex_imm <= { { 20 { b_imm[12] } }, b_imm[11:0] };
+                idex_imm <= { { 20 { id_b_imm[12] } }, id_b_imm[11:0] };
 
                 idex_alu_src <= `ALU_SRC_FROM_REG;
 
-                if (funct3 == `BRANCH_BEQ) begin // BEQ
+                if (id_funct3 == `BRANCH_BEQ) begin // BEQ
                     idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BEQ;
 
-                end else if (funct3 == 3'b101) begin //BGE
+                end else if (id_funct3 == 3'b101) begin //BGE
                 // TODO: BGE
-                end else if (funct3 == 3'b111) begin //BGEU
+                end else if (id_funct3 == 3'b111) begin //BGEU
                 // TODO: BGEU
-                end else if (funct3 == 3'b100) begin //BLT
+                end else if (id_funct3 == 3'b100) begin //BLT
                 // TODO: BLT
-                end else if (funct3 == 3'b110) begin //BLTU
+                end else if (id_funct3 == 3'b110) begin //BLTU
                 // TODO: BLTU
-                end else if (funct3 == 3'b001) begin //BNE
+                end else if (id_funct3 == 3'b001) begin //BNE
                 // TODO: BNE
                 end
             end
         endcase
+    end
     end
     // -------------------------------------------------------------------------
 
@@ -282,7 +282,6 @@ module cpu (
      **************************************************************************/
     wire [31:0] alu_input_a;
     wire [31:0] alu_input_b;
-
     wire [31:0] alu_out;
 
     // Modules instantiations
@@ -350,7 +349,6 @@ module cpu (
     /***************************************************************************
      * Writeback (WB) stage
      **************************************************************************/
-
     always @(*) begin
         if(memwb_mem_to_reg) begin
             wb_data = memwb_mem_data_read;
