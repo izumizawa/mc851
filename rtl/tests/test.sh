@@ -1,3 +1,5 @@
+echo "===============================Testing modules============================="
+
 # Test ALU
 echo "===Testing alu_tb.v========================================================"
 iverilog -o ./modules/alu_module_tb.vvp ./modules/alu_module_tb.v ../components/alu_module.v
@@ -16,7 +18,15 @@ iverilog -o modules/register_file.vvp modules/register_file_tb.v ../components/r
 vvp ./modules/register_file.vvp
 echo ""
 
-# Test instructions
+echo "===============================Testing integration=========================="
+
+echo "===Testing forwarding_unit_tb.v=============================================="
+iverilog -I ../ -o integration/forwarding_unit.vvp integration/forwarding_unit_tb.v ../soc.v
+vvp ./integration/forwarding_unit.vvp
+echo ""
+
+echo "===============================Testing instructions========================="
+
 echo "===Testing addi_tb.v=============================================="
 iverilog -I ../ -o instructions/addi.vvp instructions/addi_tb.v ../soc.v
 vvp ./instructions/addi.vvp

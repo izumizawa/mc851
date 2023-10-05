@@ -291,8 +291,8 @@ module cpu (
     /***************************************************************************
      * Execute (EX) stage
      **************************************************************************/
-    wire [31:0] alu_input_a;
-    wire [31:0] alu_input_b;
+    reg [31:0] alu_input_a;
+    reg [31:0] alu_input_b;
     wire [31:0] alu_out;
 
     // Modules instantiations
@@ -303,10 +303,26 @@ module cpu (
         .alu_output_result(alu_out) // Wire always required in modules output
     );
 
-    // TODO: Forwarding Unit.
+    // Forwarding Unit.
+    always @(*) begin
+        if (exmem_rd != 0 && exmem_reg_write && exmem_rd == idex_rs1) begin
+            alu_input_a = exmem_alu_out;
+        end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs1) begin
+            alu_input_a = wb_data;
+        end else begin
+            alu_input_a = idex_data_read_1;
+        end
 
-    assign alu_input_a = idex_data_read_1;
-    assign alu_input_b = (idex_alu_src == `ALU_SRC_FROM_REG) ? idex_data_read_2 : idex_imm;
+        if (idex_alu_src == `ALU_SRC_FROM_IMM) begin
+            alu_input_b = idex_imm;
+        end else if (exmem_rd != 0 && exmem_reg_write && exmem_rd == idex_rs2) begin
+            alu_input_b = exmem_alu_out;
+        end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs2) begin
+            alu_input_b = wb_data;
+        end else begin
+            alu_input_b = idex_data_read_2;
+        end
+    end
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n || exmem_reset) begin
