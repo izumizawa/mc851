@@ -29,7 +29,7 @@ module forwarding_unit_tb();
     endtask
 
      initial begin
-        $display("addi_tb: starting tests");
+        $display("forwarding_unit_tb: starting tests");
 
         reset_n = 1;
         #1;

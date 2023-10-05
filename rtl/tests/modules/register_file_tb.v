@@ -126,6 +126,7 @@ module register_file_tb;
     endtask
 
     initial begin
+        $display("register_file_tb.v: starting tests");
         Teste();
     end
 
