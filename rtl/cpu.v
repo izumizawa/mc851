@@ -25,6 +25,7 @@ module cpu (
     reg idex_reg_write;
     reg idex_mem_read;
     reg idex_mem_write;
+    reg [ 1:0] idex_mem_data_width;
     reg idex_mem_to_reg;
     reg idex_alu_src;
     reg [ 3:0] idex_alu_op;
@@ -42,6 +43,7 @@ module cpu (
     reg exmem_reg_write;
     reg exmem_mem_read;
     reg exmem_mem_write;
+    reg [ 1:0] exmem_mem_data_width;
     reg [31:0] exmem_branch_target;
     //TODO: Substituir pelos nomes explícitos das flags conforme necessário (ex.: zero, negative, overflow, carry)
     reg [ 3:0] exmem_flags;
@@ -104,7 +106,7 @@ module cpu (
         if(!reset_n) begin
             pc <= 0;
             ifid_pc <= 32'b0;
-        end else begin
+        end else if(!if_stall) begin
             ifid_pc <= pc;
 
             if (branch_taken) begin
@@ -154,8 +156,11 @@ module cpu (
     // Default i_imm
     assign id_i_imm = { { 20{ ifid_ir[31] } }, ifid_ir[31:20] };
     assign id_shamt = { 27'b0, ifid_ir[24:20] };
-    // B-type b_imm
+
+    // B-type
     assign id_b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
+
+    // S-type
     assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
 
     always @(posedge clk, negedge reset_n) begin
@@ -165,6 +170,7 @@ module cpu (
             idex_mem_read <= 0;
             idex_mem_write <= 0;
             idex_mem_to_reg <= 0;
+            idex_mem_data_width <= 0;
             idex_alu_src <= 0;
             idex_alu_op <= 4'b0;
             idex_data_read_1 <= 32'b0;
@@ -258,6 +264,17 @@ module cpu (
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= id_s_imm;
+                case(id_funct3)
+                    3'b000: begin //SB
+                        idex_mem_data_width <= `MMU_WIDTH_BYTE;
+                    end
+                    3'b001: begin //SH
+                        idex_mem_data_width <= `MMU_WIDTH_HALF;
+                    end
+                    3'b010: begin //SW
+                        idex_mem_data_width <= `MMU_WIDTH_WORD;
+                    end
+                endcase
             end
 
             // B-type instructions
@@ -332,6 +349,7 @@ module cpu (
             exmem_reg_write <= 0;
             exmem_mem_read <= 0;
             exmem_mem_write <= 0;
+            exmem_mem_data_width <= 0;
             exmem_flags <= 4'b0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
@@ -343,6 +361,7 @@ module cpu (
             exmem_mem_read <= idex_mem_read;
             exmem_mem_to_reg <= idex_mem_to_reg;
             exmem_mem_write <= idex_mem_write;
+            exmem_mem_data_width <= idex_mem_data_width;
             exmem_rd <= idex_rd;
             exmem_reg_write <= idex_reg_write;
 
