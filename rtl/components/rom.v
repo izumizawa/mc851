@@ -1,7 +1,7 @@
 // TODO: implementar teste da ROM
 module rom #(
     parameter ADDR_WIDTH = 8,  // 256×4B = 1 KiB
-    parameter ROMFILE=""
+    parameter ROMFILE="../../src/memdump/beq.mem"
 ) (
     input clk,
     input read_enable,
@@ -12,7 +12,7 @@ module rom #(
     reg [31:0] mem [0:2**ADDR_WIDTH-1];
 
     initial begin
-        $readmemh(ROMFILE, mem);
+        $readmemh("../../src/memdump/beq.mem", mem);
     end
 
     always @(posedge clk) begin

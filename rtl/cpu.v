@@ -1,6 +1,4 @@
 `include "define.v"
-`include "../components/register_file.v"
-`include "../components/alu_module.v"
 
 module cpu (
     input         clk,
@@ -159,7 +157,23 @@ module cpu (
     assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
 
     always @(posedge clk, negedge reset_n) begin
-        if (!reset_n || idex_reset) begin
+        if (!reset_n) begin
+            // Reset ID/EX registers
+            idex_branch_op <= `NOT_BRANCH;
+            idex_mem_read <= 0;
+            idex_mem_write <= 0;
+            idex_mem_to_reg <= 0;
+            idex_alu_src <= 0;
+            idex_alu_op <= 4'b0;
+            idex_data_read_1 <= 32'b0;
+            idex_data_read_2 <= 32'b0;
+            idex_rs1 <= 5'b0;
+            idex_rs2 <= 5'b0;
+            idex_rd <= 5'b0;
+            idex_imm <= 32'b0;
+            idex_reg_write <= 0;
+            idex_pc <= 0;
+        end else if(idex_reset) begin
             // Reset ID/EX registers
             idex_branch_op <= `NOT_BRANCH;
             idex_mem_read <= 0;
@@ -309,8 +323,19 @@ module cpu (
     assign alu_input_b = (idex_alu_src == `ALU_SRC_FROM_REG) ? idex_data_read_2 : idex_imm;
 
     always @(posedge clk, negedge reset_n) begin
-        if (!reset_n || exmem_reset) begin
+        if (!reset_n) begin
             // Reset EX/MEM registers
+            exmem_branch_op <= `NOT_BRANCH;
+            exmem_mem_to_reg <= 0;
+            exmem_reg_write <= 0;
+            exmem_mem_read <= 0;
+            exmem_mem_write <= 0;
+            exmem_flags <= 4'b0;
+            exmem_data_read_2 <= 32'b0;
+            exmem_rd <= 5'b0;
+            exmem_alu_out <= 0;
+            exmem_branch_target <= 0;
+        end else if (exmem_reset) begin
             exmem_branch_op <= `NOT_BRANCH;
             exmem_mem_to_reg <= 0;
             exmem_reg_write <= 0;

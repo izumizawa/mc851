@@ -2,7 +2,10 @@
     "name": "mc851",
     "includedFiles": [
         "soc.v",
-        "cpu.v"
+        "mmu.v",
+        "cpu.v",
+        "components/alu_module.v",
+        "components/register_file.v"
     ],
     "board": "tangnano9k",
     "constraintsFile": "tangnano9k.cst",
