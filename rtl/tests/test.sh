@@ -27,6 +27,10 @@ iverilog -I ../ -o instructions/addi.vvp instructions/addi_tb.v ../soc.v
 vvp ./instructions/addi.vvp
 echo ""
 
+iverilog -I ../ -o instructions/andi.vvp instructions/andi_tb.v ../soc.v
+vvp ./instructions/andi.vvp
+echo ""
+
 iverilog -I ../ -o instructions/beq.vvp instructions/beq_tb.v ../soc.v
 vvp ./instructions/beq.vvp
 echo ""
@@ -35,30 +39,26 @@ iverilog -I ../ -o instructions/ori.vvp instructions/ori_tb.v ../soc.v
 vvp ./instructions/ori.vvp
 echo ""
 
-iverilog -I ../ -o instructions/andi.vvp instructions/andi_tb.v ../soc.v
-vvp ./instructions/andi.vvp
-echo ""
-
-iverilog -I ../ -o instructions/xori.vvp instructions/xori_tb.v ../soc.v
-vvp ./instructions/xori.vvp
+iverilog -I ../ -o instructions/slli.vvp instructions/slli_tb.v ../soc.v
+vvp ./instructions/slli.vvp
 echo ""
 
 iverilog -I ../ -o instructions/slti.vvp instructions/slti_tb.v ../soc.v
 vvp ./instructions/slti.vvp
 echo ""
 
-iverilog -I ../ -o instructions/slli.vvp instructions/slli_tb.v ../soc.v
-vvp ./instructions/slli.vvp
-echo ""
-
-iverilog -I ../ -o instructions/srli.vvp instructions/srli_tb.v ../soc.v
-vvp ./instructions/srli.vvp
+iverilog -I ../ -o instructions/sltiu.vvp instructions/sltiu_tb.v ../soc.v
+vvp ./instructions/sltiu.vvp
 echo ""
 
 iverilog -I ../ -o instructions/srai.vvp instructions/srai_tb.v ../soc.v
 vvp ./instructions/srai.vvp
 echo ""
 
-iverilog -I ../ -o instructions/sltiu.vvp instructions/sltiu_tb.v ../soc.v
-vvp ./instructions/sltiu.vvp
+iverilog -I ../ -o instructions/srli.vvp instructions/srli_tb.v ../soc.v
+vvp ./instructions/srli.vvp
+echo ""
+
+iverilog -I ../ -o instructions/xori.vvp instructions/xori_tb.v ../soc.v
+vvp ./instructions/xori.vvp
 echo ""
