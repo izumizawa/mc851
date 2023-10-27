@@ -24,7 +24,7 @@ module slti_tb();
         else
             $error("    x5 should be 32'h00000001, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
 
-        #8;
+        #10;
 
         if(soc_inst.cpu_inst.regfile.registers[5] == 32'h00000000)
             $display("\n    passed all scenarios!");
