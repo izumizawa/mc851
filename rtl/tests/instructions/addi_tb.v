@@ -1,3 +1,8 @@
+`include "../cpu.v"
+`include "../mmu.v"
+`include "../components/register_file.v"
+`include "../components/alu_module.v"
+
 module addi_tb();
     reg clk;
     reg reset_n;

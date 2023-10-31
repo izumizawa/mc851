@@ -3,9 +3,8 @@ module soc #(
     parameter ROMFILE="../src/memdump/beq.mem"
 ) (
     input clk,
+    input reset_n,
     input btn1,
-    input btn2,
-    input uart_rx,
     output uart_tx
 );
     wire         mmu_mem_ready;
@@ -20,7 +19,7 @@ module soc #(
 
     cpu cpu_inst (
         .clk (clk),
-        .reset_n (btn2),
+        .reset_n (reset_n),
         .mmu_mem_ready(mmu_mem_ready),
         .mmu_data_out(mmu_data_out),
         .mmu_write_enable(mmu_write_enable),
@@ -33,7 +32,7 @@ module soc #(
 
     mmu #( .ROMFILE(ROMFILE)) mmu_inst (
         .clk(clk),
-        .reset_n(btn2),
+        .reset_n(reset_n),
         .write_enable(mmu_write_enable),
         .read_enable(mmu_read_enable),
         .mem_signed_read(mmu_signed_read),
@@ -47,30 +46,18 @@ module soc #(
 // TEST
 reg [3:0] txState = 0;
 reg [24:0] txCounter = 0;
-reg [31:0] dataOut = 0;
+reg [7:0] dataOut = 0;
+reg [7:0] dataArray [0:3];
 reg txPinRegister = 1;
-reg [4:0] txBitNumber = 0;
-reg [3:0] txByteCounter = 0;
+reg [2:0] txBitNumber = 0;
+reg [1:0] txByteCounter = 0;
+wire [31:0] data;
 
+// assign data = cpu_inst.regfile.registers[5];
+assign data = 32'b11111001101110011001101110011111;
 assign uart_tx = txPinRegister;
 
-localparam MEMORY_LENGTH = 12;
-reg [7:0] testMemory [MEMORY_LENGTH-1:0];
-
-initial begin
-    testMemory[0] = "M";
-    testMemory[1] = "a";
-    testMemory[2] = "u";
-    testMemory[3] = "r";
-    testMemory[4] = "i";
-    testMemory[5] = "c";
-    testMemory[6] = "i";
-    testMemory[7] = "o";
-    testMemory[8] = "!";
-    testMemory[9] = "!";
-    testMemory[10] = " ";
-    testMemory[11] = "";
-end
+localparam MEMORY_LENGTH = 4;
 
 localparam TX_STATE_IDLE = 0;
 localparam TX_STATE_START_BIT = 1;
@@ -86,6 +73,10 @@ always @(posedge clk) begin
                 txState <= TX_STATE_START_BIT;
                 txCounter <= 0;
                 txByteCounter <= 0;
+                dataArray[0] <= data[31:24];
+                dataArray[1] <= data[23:16];
+                dataArray[2] <= data[15:8];
+                dataArray[3] <= data[7:0];
             end
             else begin
                 txPinRegister <= 1;
@@ -95,7 +86,7 @@ always @(posedge clk) begin
             txPinRegister <= 0;
             if ((txCounter + 1) == DELAY_FRAMES) begin
                 txState <= TX_STATE_WRITE;
-                dataOut <= cpu_inst.regfile.registers[5];
+                dataOut <= dataArray[txByteCounter];
                 txBitNumber <= 0;
                 txCounter <= 0;
             end else
@@ -104,7 +95,7 @@ always @(posedge clk) begin
         TX_STATE_WRITE: begin
             txPinRegister <= dataOut[txBitNumber];
             if ((txCounter + 1) == DELAY_FRAMES) begin
-                if (txBitNumber == 5'b11111) begin
+                if (txBitNumber == 3'b111) begin
                     txState <= TX_STATE_STOP_BIT;
                 end else begin
                     txState <= TX_STATE_WRITE;

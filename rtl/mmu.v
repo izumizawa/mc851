@@ -3,7 +3,7 @@
 `include "components/rom.v"
 
 module mmu #(
-    parameter ROMFILE=""
+    parameter ROMFILE="../src/memdump/beq.mem"
 ) (
     input clk, reset_n,
     input write_enable,
