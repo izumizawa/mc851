@@ -10,8 +10,10 @@ module cpu (
     output        mmu_mem_signed_read,
     output [ 1:0] mmu_mem_data_width,
     output [31:0] mmu_address,
-    output [31:0] mmu_data_in
+    output [31:0] mmu_data_in,
+    output wire [31:0] uart_data
 );
+
     // IF/ID Register
     reg [31:0] ifid_pc;
     wire [31:0] ifid_ir;
@@ -139,7 +141,8 @@ module cpu (
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
         .read_data1(read_data_1),
-        .read_data2(read_data_2)
+        .read_data2(read_data_2),
+        .uart_data(uart_data)
     );
 
     // Assigns

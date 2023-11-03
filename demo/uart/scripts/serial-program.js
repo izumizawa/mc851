@@ -5,8 +5,6 @@ const tangnano = new SerialPort({
     baudRate: 115200,
 });
 
-let counter = 0;
-
 tangnano.on('data', function (data) {
     console.log('Dado em hexadecimal:', data.toString('hex'))
 

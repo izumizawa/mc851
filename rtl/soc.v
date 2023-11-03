@@ -27,7 +27,8 @@ module soc #(
         .mmu_mem_signed_read(mmu_signed_read),
         .mmu_mem_data_width(mmu_mem_data_width),
         .mmu_address(mmu_address),
-        .mmu_data_in(mmu_data_in)
+        .mmu_data_in(mmu_data_in),
+        .uart_data(data)
     );
 
     mmu #( .ROMFILE(ROMFILE)) mmu_inst (
@@ -53,17 +54,15 @@ reg [2:0] txBitNumber = 0;
 reg [1:0] txByteCounter = 0;
 wire [31:0] data;
 
-// assign data = cpu_inst.regfile.registers[5];
-assign data = 32'b11111001101110011001101110011111;
+// assign data = 32'b11111001101110011001101110011111;
 assign uart_tx = txPinRegister;
-
-localparam MEMORY_LENGTH = 4;
 
 localparam TX_STATE_IDLE = 0;
 localparam TX_STATE_START_BIT = 1;
 localparam TX_STATE_WRITE = 2;
 localparam TX_STATE_STOP_BIT = 3;
 localparam TX_STATE_DEBOUNCE = 4;
+
 localparam DELAY_FRAMES = 234; // 27,000,000 (27Mhz) / 115200 Baud rate
 
 always @(posedge clk) begin
@@ -108,7 +107,7 @@ always @(posedge clk) begin
         TX_STATE_STOP_BIT: begin
             txPinRegister <= 1;
             if ((txCounter + 1) == DELAY_FRAMES) begin
-                if (txByteCounter == MEMORY_LENGTH - 1) begin
+                if (txByteCounter == 2'b11) begin
                     txState <= TX_STATE_DEBOUNCE;
                 end else begin
                     txByteCounter <= txByteCounter + 1;
