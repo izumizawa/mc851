@@ -1,6 +1,6 @@
 `include "define.v"
-`include "../components/register_file.v"
-`include "../components/alu_module.v"
+`include "components/register_file.v"
+`include "components/alu_module.v"
 
 module cpu (
     input         clk,
