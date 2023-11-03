@@ -23,7 +23,7 @@ module soc #(
         .mmu_data_out(mmu_data_out),
         .mmu_write_enable(mmu_write_enable),
         .mmu_read_enable(mmu_read_enable),
-        .mmu_mem_signed_read(mmu_signed_read),
+        .mmu_mem_signed_read(mmu_mem_signed_read),
         .mmu_mem_data_width(mmu_mem_data_width),
         .mmu_address(mmu_address),
         .mmu_data_in(mmu_data_in)
@@ -34,7 +34,7 @@ module soc #(
         .reset_n(reset_n),
         .write_enable(mmu_write_enable),
         .read_enable(mmu_read_enable),
-        .mem_signed_read(mmu_signed_read),
+        .mem_signed_read(mmu_mem_signed_read),
         .mem_data_width(mmu_mem_data_width),
         .address(mmu_address),
         .data_in(mmu_data_in),
