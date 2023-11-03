@@ -1,15 +1,15 @@
 module l1_data_cache #(
     parameter OFFSET_WIDTH = 5,
-    parameter INDEX_WIDTH = 7,
+    parameter INDEX_WIDTH = 7
 ) (
     input clk,
-    input mmu_mem_ready,
+    input mem_data_available,
     input write_enable,
     input read_enable,
     input  [31:0] address,
-    input  [31:0] write_data,
-    output [31:0] read_data,
-    output [31:0] cache_miss
+    input  [31:0] data_in,
+    output cache_miss,
+    output [31:0] data_out
 );
 
     /*

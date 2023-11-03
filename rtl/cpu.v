@@ -1,6 +1,8 @@
 `include "define.v"
 `include "components/register_file.v"
 `include "components/alu_module.v"
+`include "components/l1_instruction_cache.v"
+`include "components/l1_data_cache.v"
 
 module cpu (
     input         clk,
@@ -14,13 +16,20 @@ module cpu (
     output [31:0] mmu_address,
     output [31:0] mmu_data_in
 );
+    // PC (Program Counter)
+    reg [31:0] pc;
+    wire pc_stall;
+
     // IF/ID Register
+    wire ifid_reset;
+    wire ifid_stall;
     reg [31:0] ifid_pc;
-    wire [31:0] ifid_ir;
+    reg [31:0] ifid_ir;
 
     // ID/EX Register
+    wire idex_reset;
+    wire idex_stall;
     reg [31:0] idex_pc;
-    reg idex_reset;
     reg [2:0] idex_branch_op;
     reg idex_reg_write;
     reg idex_mem_read;
@@ -37,7 +46,8 @@ module cpu (
 	reg [31:0] idex_imm;
 
     // EX/MEM Register
-    reg exmem_reset;
+    wire exmem_reset;
+    wire exmem_stall;
     reg [2:0] exmem_branch_op;
     reg exmem_mem_to_reg;
     reg exmem_reg_write;
@@ -45,75 +55,98 @@ module cpu (
     reg exmem_mem_write;
     reg [ 1:0] exmem_mem_data_width;
     reg [31:0] exmem_branch_target;
-    //TODO: Substituir pelos nomes explícitos das flags conforme necessário (ex.: zero, negative, overflow, carry)
-    reg [ 3:0] exmem_flags;
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
     reg [ 4:0] exmem_rd;
 
     // MEM/WB Register
+    wire memwb_reset;
     reg [31:0] memwb_mem_data_read;
     reg [31:0] memwb_alu_out;
     reg [ 4:0] memwb_rd;
     reg memwb_reg_write;
     reg memwb_mem_to_reg;
 
-    reg [31:0] wb_data; // conectado do mux do WB para escrita no banco de registradores
+    // Writeback
+    wire [31:0] wb_data; // conectado do mux do WB para escrita no banco de registradores
+
+
+    /***************************************************************************
+     * L1 Instruction Cache
+     */
+    wire l1i_mem_data_available;
+    wire [31:0] l1i_data_out;
+    wire l1i_cache_miss;
+
+    l1_instruction_cache l1i_inst (
+        .clk(clk),
+        .mem_data_available(l1i_mem_data_available),
+        .address(pc),
+        .cache_miss(l1i_cache_miss),
+        .data_out(l1i_data_out)
+    );
+    // -------------------------------------------------------------------------
+
+    /***************************************************************************
+     * L1 Data Cache
+     */
+    wire l1d_cache_miss;
+    wire [31:0] l1d_data_out;
+
+    l1_data_cache l1d_inst (
+        .clk(clk),
+        .mem_data_available(),
+        .write_enable(exmem_mem_write),
+        .read_enable(exmem_mem_read),
+        .address(exmem_alu_out),
+        .data_in(exmem_data_read_2),
+        .cache_miss(l1d_cache_miss),
+        .data_out(l1d_data_out)
+    );
+    // -------------------------------------------------------------------------
+
+    assign ifid_reset = 0;
+    assign idex_reset = branch_taken;
+    assign exmem_reset = branch_taken;
+    assign memwb_reset = exmem_stall;
+
+    assign pc_stall = l1i_cache_miss || ifid_stall;
+    assign ifid_stall = idex_stall;
+    assign idex_stall = exmem_stall;
+    assign exmem_stall = l1d_cache_miss;
 
 
     /***************************************************************************
      * Instruction Fetch (IF) stage
      **************************************************************************/
-    reg [31:0] pc;
-    reg if_stall;
     reg branch_taken;
 
     // TODO: Memory Access Control e Hazard Unit
-
     assign mmu_write_enable = 0;
     assign mmu_read_enable = 1;
     assign mmu_mem_signed_read = 0;
     assign mmu_mem_data_width = `MMU_WIDTH_WORD;
-
     assign mmu_address = pc;
-    assign mmu_data_in = 0; // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
-    assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
-
-    always @(*) begin
-        case (exmem_branch_op)
-            `NOT_BRANCH: begin
-                idex_reset = 0;
-                exmem_reset = 0;
-                branch_taken = 0;
-            end
-            `BRANCH_BEQ: begin
-                if (exmem_alu_out == 32'b0) begin
-                    idex_reset = 1;
-                    exmem_reset = 1;
-                    branch_taken = 1;
-                end
-            end
-            //TODO: BGE, BGEU, BLT, BLTU, BNE, ...
-            default: begin
-                idex_reset = 0;
-                exmem_reset = 0;
-                branch_taken = 0;
-            end
-        endcase
-    end
+    assign mmu_data_in = 0;
+    // assign ifid_ir = mmu_data_out;
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
             pc <= 0;
-            ifid_pc <= 32'b0;
-        end else if(!if_stall) begin
-            ifid_pc <= pc;
+        end else if (branch_taken) begin
+            pc <= exmem_branch_target;
+        end else if (!pc_stall) begin
+            pc <= pc + 4;
+        end
+    end
 
-            if (branch_taken) begin
-                pc <= exmem_branch_target;
-            end else begin
-                pc <= pc + 4;
-            end
+    always @(posedge clk, negedge reset_n) begin
+        if(!reset_n) begin
+            ifid_pc <= 32'b0;
+            ifid_ir <= `RISCV_NOP;
+        end else if(!ifid_stall) begin
+            ifid_pc <= pc;
+            ifid_ir <= l1i_data_out;
         end
     end
     // -------------------------------------------------------------------------
@@ -312,12 +345,12 @@ module cpu (
     reg [31:0] alu_input_b;
     wire [31:0] alu_out;
 
-    // Modules instantiations
+    // Arithmetic Logic Unit (ALU)
     alu_module alu_inst(
-        .alu_input_op(idex_alu_op),
+        .alu_op(idex_alu_op),
         .alu_input_a(alu_input_a),
         .alu_input_b(alu_input_b),
-        .alu_output_result(alu_out) // Wire always required in modules output
+        .alu_out(alu_out)
     );
 
     // Forwarding Unit.
@@ -350,7 +383,6 @@ module cpu (
             exmem_mem_read <= 0;
             exmem_mem_write <= 0;
             exmem_mem_data_width <= 0;
-            exmem_flags <= 4'b0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
@@ -368,6 +400,31 @@ module cpu (
             exmem_alu_out <= alu_out;
         end
     end
+
+    // Resolução de branch
+    always @(*) begin
+        branch_taken = 0;
+
+        case (exmem_branch_op)
+            `BRANCH_BEQ: begin
+                if (exmem_alu_out == 32'b0) begin
+                    branch_taken = 1;
+                end
+            end
+
+            `BRANCH_BNE: begin
+                if (exmem_alu_out != 32'b0) begin
+                    branch_taken = 1;
+                end
+            end
+
+            //TODO: BGE, BGEU, BLT, BLTU, ...
+            default: begin
+                branch_taken = 0;
+            end
+
+        endcase
+    end
     // -------------------------------------------------------------------------
 
 
@@ -383,6 +440,7 @@ module cpu (
             memwb_reg_write <= 0;
             memwb_mem_to_reg <= 0;
         end else begin
+            memwb_mem_data_read <= l1d_data_out;
             memwb_alu_out <= exmem_alu_out;
             memwb_rd <= exmem_rd;
             memwb_reg_write <= exmem_reg_write;
@@ -395,13 +453,7 @@ module cpu (
     /***************************************************************************
      * Writeback (WB) stage
      **************************************************************************/
-    always @(*) begin
-        if(memwb_mem_to_reg) begin
-            wb_data = memwb_mem_data_read;
-        end else begin
-            wb_data = memwb_alu_out;
-        end
-    end
+    assign wb_data = memwb_mem_to_reg ? memwb_mem_data_read : memwb_alu_out;
     // -------------------------------------------------------------------------
 
 endmodule
