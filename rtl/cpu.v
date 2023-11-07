@@ -230,9 +230,9 @@ module cpu (
                 if (id_funct3 == 3'b000) begin
                     idex_alu_op <= `ALU_ADD;
                 end else if (id_funct3 == 3'b010) begin
-                    idex_alu_op <= `ALU_ADD;
-                end else if (id_funct3 == 3'b011) begin
                     idex_alu_op <= `ALU_SLT;
+                end else if (id_funct3 == 3'b011) begin
+                    idex_alu_op <= `ALU_SLTU;
                 end else if (id_funct3 == 3'b100) begin
                     idex_alu_op <= `ALU_XOR;
                 end else if (id_funct3 == 3'b110) begin
