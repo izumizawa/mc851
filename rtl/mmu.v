@@ -135,6 +135,7 @@ module mmu #(
             end
         endcase
 
+        // TODO: Corrigir para utilizar a placa
         // Fazer extensão de sinal do valor lido
         // if (mem_signed_read) begin
         //     case (mem_data_width)
