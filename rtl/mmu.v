@@ -1,7 +1,7 @@
 `include "define.v"
 
 module mmu #(
-    parameter ROMFILE="../src/memdump/addi_loop.mem"
+    parameter ROMFILE="../src/memdump/addi.mem"
 ) (
     input clk, reset_n,
     input write_enable,
