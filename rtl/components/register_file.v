@@ -8,13 +8,14 @@ module register_file (
 
     output wire [31:0] read_data1, // Dado que foi lido
     output wire [31:0] read_data2, // Outro dado que foi lido
-    output reg [31:0] uart_data
+    output wire [31:0] uart_data
 );
     reg [31:0] registers [0:31];
 
     // Lógica de leitura
     assign read_data1 = (read_reg1 != 0) ? registers[read_reg1] : 0;
     assign read_data2 = (read_reg2 != 0) ? registers[read_reg2] : 0;
+    assign uart_data = registers[5];
 
     // Lógica de escrita
     integer i;
@@ -30,5 +31,4 @@ module register_file (
         end
     end
 
-    assign uart_data = registers[5];
 endmodule
