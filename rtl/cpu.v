@@ -513,7 +513,7 @@ module cpu (
             memwb_rd <= 5'b0;
             memwb_reg_write <= 0;
             memwb_mem_to_reg <= 0;
-        end begin
+        end else begin
             memwb_mem_data_read <= l1d_data_out;
             memwb_alu_out <= exmem_alu_out;
             memwb_rd <= exmem_rd;
