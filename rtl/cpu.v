@@ -78,6 +78,10 @@ module cpu (
     assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
 
     always @(*) begin
+        idex_reset = 0;
+        exmem_reset = 0;
+        branch_taken = 0;
+
         case (exmem_branch_op)
             `NOT_BRANCH: begin
                 idex_reset = 0;
@@ -133,6 +137,9 @@ module cpu (
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
+    wire [31:0] register_file_uart_data;
+    assign uart_data = register_file_uart_data;
+
     register_file regfile(
         .clk(clk),
         .read_reg1(id_rs1),
@@ -142,7 +149,7 @@ module cpu (
         .write_data(wb_data),
         .read_data1(read_data_1),
         .read_data2(read_data_2),
-        .uart_data(uart_data)
+        .uart_data(register_file_uart_data)
     );
 
     // Assigns

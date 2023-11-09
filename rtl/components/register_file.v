@@ -8,25 +8,27 @@ module register_file (
 
     output wire [31:0] read_data1, // Dado que foi lido
     output wire [31:0] read_data2, // Outro dado que foi lido
-    output wire [31:0] uart_data
+    output reg [31:0] uart_data
 );
-    reg [31:0] registers [31:1];
-    reg [31:0] bla;
-    localparam index = 5;
+    reg [31:0] registers [0:31];
 
     // Lógica de leitura
     assign read_data1 = (read_reg1 != 0) ? registers[read_reg1] : 0;
     assign read_data2 = (read_reg2 != 0) ? registers[read_reg2] : 0;
-    // assign uart_data = 32'b11111001101110011001101110011111;
-    assign uart_data = bla;
 
     // Lógica de escrita
+    integer i;
     always @(posedge clk) begin
-        bla <= registers[5];
         if (write_enable) begin
             if (write_reg != 0) begin
-                registers[write_reg] <= write_data;
+                for(i=0; i<31; i=i+1) begin
+                    if (i == write_reg) begin
+                        registers[i] <= write_data;
+                    end
+                end
             end
         end
     end
+
+    assign uart_data = registers[5];
 endmodule

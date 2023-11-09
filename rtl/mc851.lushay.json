@@ -5,7 +5,9 @@
         "mmu.v",
         "cpu.v",
         "components/alu_module.v",
-        "components/register_file.v"
+        "components/register_file.v",
+        "components/rom.v",
+        "components/ram.v"
     ],
     "board": "tangnano9k",
     "constraintsFile": "tangnano9k.cst",

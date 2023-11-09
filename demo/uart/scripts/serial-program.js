@@ -6,9 +6,13 @@ const tangnano = new SerialPort({
 });
 
 tangnano.on('data', function (data) {
-    console.log('Dado em hexadecimal:', data.toString('hex'))
+    const hexValue = data.toString('hex')
+    const decValue = parseInt(hexValue, 16)
 
-    const binary = (parseInt(data.toString('hex'), 16).toString(2)).padStart(8, '0').match(/.{1,8}/g).join(' ')
+    console.log('Dado em decimal:', decValue)
+    console.log('Dado em hexadecimal:', hexValue)
 
+    const binary = (decValue.toString(2)).padStart(8, '0').match(/.{1,8}/g).join(' ')
     console.log('Dado em binário:', binary)
+    console.log()
 });
