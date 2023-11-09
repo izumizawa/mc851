@@ -20,8 +20,8 @@ module alu_module (
             `ALU_SRL:  alu_out = alu_input_a >> alu_input_b[4:0];
             `ALU_SRA:  alu_out = $signed(alu_input_a) >>> alu_input_b[4:0];
         // COMPARE OPS
-            `ALU_SLT:  alu_out = ($signed(alu_input_a) < $signed(alu_input_b) ? 1 : 0);
-            `ALU_SLTU: alu_out = (alu_input_a < alu_input_b ? 1 : 0);
+            `ALU_SLT:  alu_out = ($signed(alu_input_a) < $signed(alu_input_b)) ? 1 : 0;
+            `ALU_SLTU: alu_out = (alu_input_a < alu_input_b) ? 1 : 0;
             default: ;
         endcase
     end
