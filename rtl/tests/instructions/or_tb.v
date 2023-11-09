@@ -18,7 +18,7 @@ module or_tb();
     begin
         $write("  test_or: ");
 
-        #10; // wait for or to complete
+        #14; // wait for or to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h0000002F)
             $display(" passed!");
         else

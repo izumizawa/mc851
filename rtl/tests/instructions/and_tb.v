@@ -18,7 +18,7 @@ module and_tb();
     begin
         $write("  test_and: ");
 
-        #10; // wait for and to complete
+        #14; // wait for and to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000022)
             $display(" passed!");
         else

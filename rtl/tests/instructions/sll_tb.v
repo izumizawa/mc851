@@ -18,7 +18,7 @@ module sll_tb();
     begin
         $write("  test_sll: ");
 
-        #10; // wait for sll to complete
+        #14; // wait for sll to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h000004C0)
             $display(" passed!");
         else

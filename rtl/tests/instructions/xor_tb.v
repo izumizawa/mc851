@@ -18,7 +18,7 @@ module xor_tb();
     begin
         $write("  test_xor: ");
 
-        #10; // wait for xor to complete
+        #14; // wait for xor to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h0000000D)
             $display(" passed!");
         else

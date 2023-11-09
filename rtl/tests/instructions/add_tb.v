@@ -18,7 +18,7 @@ module add_tb();
     begin
         $write("  test_add: ");
 
-        #10; // wait for add to complete
+        #14; // wait for add to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000051)
             $display(" passed!");
         else

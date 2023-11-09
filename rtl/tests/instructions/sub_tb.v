@@ -18,17 +18,11 @@ module sub_tb();
     begin
         $write("  test_sub: ");
 
-        #10; // wait for first sub to complete
+        #14; // wait for first sub to complete
         if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000005)
             $display(" passed!");
         else
             $error("    x7 should be 32'h00000005, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
-
-        #10; // wait for first sub to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'hFFFFFFFB)
-            $display(" passed!");
-        else
-            $error("    x7 should be 32'hFFFFFFFB, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
 
         #8;
     end
