@@ -1,7 +1,7 @@
 // TODO: implementar teste da ROM
 module rom #(
     parameter ADDR_WIDTH = 8,  // 256×4B = 1 KiB
-    parameter ROMFILE="../../src/memdump/beq.mem"
+    parameter ROMFILE="../../src/memdump/addi_loop.mem"
 ) (
     input clk,
     input read_enable,

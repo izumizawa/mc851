@@ -1,6 +1,6 @@
 
 module soc #(
-    parameter ROMFILE="../src/memdump/beq.mem"
+    parameter ROMFILE="../src/memdump/addi_loop.mem"
 ) (
     input clk,
     input reset_n,
