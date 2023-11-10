@@ -1,4 +1,3 @@
-
 module soc #(
     parameter ROMFILE="../src/memdump/addi.mem"
 ) (

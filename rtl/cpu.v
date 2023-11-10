@@ -10,7 +10,7 @@ module cpu (
     output reg          mmu_mem_signed_read,
     output reg [ 1:0]   mmu_mem_data_width,
     output reg [31:0]   mmu_address,
-    output reg [31:0]   mmu_data_in
+    output reg [31:0]   mmu_data_in,
     output wire [31:0]  uart_data
 );
     // PC (Program Counter)
@@ -49,7 +49,7 @@ module cpu (
     reg exmem_reg_write;
     reg exmem_mem_read;
     reg exmem_mem_write;
-    reg [ 1:0] exmem_mem_data_width;
+    reg [ 1:0] exmem_mem_data_width; // TODO: Passar pra cache de dados
     reg [31:0] exmem_branch_target;
     reg exmem_branch_taken;
     reg [31:0] exmem_alu_out;
@@ -191,6 +191,9 @@ module cpu (
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
+            ifid_pc <= 32'b0;
+            ifid_ir <= `RISCV_NOP;
+        end else if (ifid_flush) begin
             ifid_pc <= 32'b0;
             ifid_ir <= `RISCV_NOP;
         end else if(!ifid_stall) begin
