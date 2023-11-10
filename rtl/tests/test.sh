@@ -21,6 +21,10 @@ iverilog -I ../ -o integration/forwarding_unit.vvp integration/forwarding_unit_t
 vvp ./integration/forwarding_unit.vvp
 echo ""
 
+iverilog -I ../ -o integration/multiply.vvp integration/multiply_tb.v ../soc.v
+vvp ./integration/multiply.vvp
+echo ""
+
 echo "===============================Testing instructions========================="
 
 iverilog -I ../ -o instructions/add.vvp instructions/add_tb.v ../soc.v
