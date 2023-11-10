@@ -1,6 +1,4 @@
 `include "define.v"
-`include "../components/register_file.v"
-`include "../components/alu_module.v"
 
 module cpu (
     input         clk,
@@ -12,8 +10,10 @@ module cpu (
     output        mmu_mem_signed_read,
     output [ 1:0] mmu_mem_data_width,
     output [31:0] mmu_address,
-    output [31:0] mmu_data_in
+    output [31:0] mmu_data_in,
+    output wire [31:0] uart_data
 );
+
     // IF/ID Register
     reg [31:0] ifid_pc;
     wire [31:0] ifid_ir;
@@ -78,6 +78,10 @@ module cpu (
     assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
 
     always @(*) begin
+        idex_reset = 0;
+        exmem_reset = 0;
+        branch_taken = 0;
+
         case (exmem_branch_op)
             `NOT_BRANCH: begin
                 idex_reset = 0;
@@ -133,6 +137,9 @@ module cpu (
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
+    wire [31:0] register_file_uart_data;
+    assign uart_data = register_file_uart_data;
+
     register_file regfile(
         .clk(clk),
         .read_reg1(id_rs1),
@@ -141,7 +148,8 @@ module cpu (
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
         .read_data1(read_data_1),
-        .read_data2(read_data_2)
+        .read_data2(read_data_2),
+        .uart_data(register_file_uart_data)
     );
 
     // Assigns
@@ -159,7 +167,23 @@ module cpu (
     assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
 
     always @(posedge clk, negedge reset_n) begin
-        if (!reset_n || idex_reset) begin
+        if (!reset_n) begin
+            // Reset ID/EX registers
+            idex_branch_op <= `NOT_BRANCH;
+            idex_mem_read <= 0;
+            idex_mem_write <= 0;
+            idex_mem_to_reg <= 0;
+            idex_alu_src <= 0;
+            idex_alu_op <= 4'b0;
+            idex_data_read_1 <= 32'b0;
+            idex_data_read_2 <= 32'b0;
+            idex_rs1 <= 5'b0;
+            idex_rs2 <= 5'b0;
+            idex_rd <= 5'b0;
+            idex_imm <= 32'b0;
+            idex_reg_write <= 0;
+            idex_pc <= 0;
+        end else if(idex_reset) begin
             // Reset ID/EX registers
             idex_branch_op <= `NOT_BRANCH;
             idex_mem_read <= 0;
@@ -325,8 +349,19 @@ module cpu (
     end
 
     always @(posedge clk, negedge reset_n) begin
-        if (!reset_n || exmem_reset) begin
+        if (!reset_n) begin
             // Reset EX/MEM registers
+            exmem_branch_op <= `NOT_BRANCH;
+            exmem_mem_to_reg <= 0;
+            exmem_reg_write <= 0;
+            exmem_mem_read <= 0;
+            exmem_mem_write <= 0;
+            exmem_flags <= 4'b0;
+            exmem_data_read_2 <= 32'b0;
+            exmem_rd <= 5'b0;
+            exmem_alu_out <= 0;
+            exmem_branch_target <= 0;
+        end else if (exmem_reset) begin
             exmem_branch_op <= `NOT_BRANCH;
             exmem_mem_to_reg <= 0;
             exmem_reg_write <= 0;

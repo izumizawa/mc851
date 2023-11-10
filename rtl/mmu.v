@@ -1,9 +1,7 @@
 `include "define.v"
-`include "components/ram.v"
-`include "components/rom.v"
 
 module mmu #(
-    parameter ROMFILE=""
+    parameter ROMFILE="../src/memdump/addi.mem"
 ) (
     input clk, reset_n,
     input write_enable,
@@ -137,17 +135,19 @@ module mmu #(
             end
         endcase
 
+        // TODO: Corrigir para utilizar a placa
         // Fazer extensão de sinal do valor lido
-        if (mem_signed_read) begin
-            case (mem_data_width)
-                0: data_out = { {24{mem_read_unsigned[ 7]}}, mem_read_unsigned[ 7:0] };
-                1: data_out = { {16{mem_read_unsigned[15]}}, mem_read_unsigned[15:0] };
-                2: data_out = { { 8{mem_read_unsigned[23]}}, mem_read_unsigned[23:0] };
-                3: data_out = mem_read_unsigned;
-            endcase
-        end else begin
-            data_out = mem_read_unsigned;
-        end
+        // if (mem_signed_read) begin
+        //     case (mem_data_width)
+        //         0: data_out = { {24{mem_read_unsigned[ 7]}}, mem_read_unsigned[ 7:0] };
+        //         1: data_out = { {16{mem_read_unsigned[15]}}, mem_read_unsigned[15:0] };
+        //         2: data_out = { { 8{mem_read_unsigned[23]}}, mem_read_unsigned[23:0] };
+        //         3: data_out = mem_read_unsigned;
+        //     endcase
+        // end else begin
+        //     data_out = mem_read_unsigned;
+        // end
+        data_out = rom_data_out;
     end
 
     always @(*) begin
