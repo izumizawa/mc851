@@ -95,6 +95,13 @@ module cpu (
                     branch_taken = 1;
                 end
             end
+            `BRANCH_BNE: begin
+                if (exmem_alu_out != 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
             //TODO: BGE, BGEU, BLT, BLTU, BNE, ...
             default: begin
                 idex_reset = 0;
@@ -303,7 +310,8 @@ module cpu (
                 end else if (id_funct3 == 3'b110) begin //BLTU
                 // TODO: BLTU
                 end else if (id_funct3 == 3'b001) begin //BNE
-                // TODO: BNE
+                    idex_alu_op <= `ALU_SUB;
+                    idex_branch_op <= `BRANCH_BNE;
                 end
             end
         endcase
