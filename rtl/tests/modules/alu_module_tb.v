@@ -130,7 +130,7 @@ module alu_module_tb();
     task test_slt();
     begin
         $write("  test_slt: ");
-        alu_tb_input_a <= 32'h4;
+        alu_tb_input_a <= -32'h4;
         alu_tb_input_b <= 32'h5;
         alu_tb_input_op <= `ALU_SLT;
         #100;
@@ -143,12 +143,12 @@ module alu_module_tb();
 
     task test_sltu();
     begin
-        $write("  test_slt: ");
+        $write("  test_sltu: ");
         alu_tb_input_a <= -32'h4;
         alu_tb_input_b <= 32'h5;
         alu_tb_input_op <= `ALU_SLTU;
         #100;
-        if (alu_tb_result != 32'h1)
+        if (alu_tb_result != 32'h0)
             $error("alu_tb_result should be 32'h1, but is %h", alu_tb_result);
         else
             $display("passed!");
