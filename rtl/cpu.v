@@ -11,6 +11,7 @@ module cpu (
     output reg [ 1:0]   mmu_mem_data_width,
     output reg [31:0]   mmu_address,
     output reg [31:0]   mmu_data_in
+    output wire [31:0]  uart_data
 );
     // PC (Program Counter)
     reg [31:0] pc;
@@ -216,6 +217,9 @@ module cpu (
     wire [31:0] read_data_1;
     wire [31:0] read_data_2;
 
+    wire [31:0] register_file_uart_data;
+    assign uart_data = register_file_uart_data;
+
     register_file regfile(
         .clk(clk),
         .read_reg1(id_rs1),
@@ -224,7 +228,8 @@ module cpu (
         .write_enable(memwb_reg_write),
         .write_data(wb_data),
         .read_data1(read_data_1),
-        .read_data2(read_data_2)
+        .read_data2(read_data_2),
+        .uart_data(register_file_uart_data)
     );
 
     // Instruction bit fields
@@ -332,9 +337,9 @@ module cpu (
                     if (id_funct3 == 3'b000) begin
                         idex_alu_op <= `ALU_ADD;
                     end else if (id_funct3 == 3'b010) begin
-                        idex_alu_op <= `ALU_ADD;
-                    end else if (id_funct3 == 3'b011) begin
                         idex_alu_op <= `ALU_SLT;
+                    end else if (id_funct3 == 3'b011) begin
+                        idex_alu_op <= `ALU_SLTU;
                     end else if (id_funct3 == 3'b100) begin
                         idex_alu_op <= `ALU_XOR;
                     end else if (id_funct3 == 3'b110) begin
@@ -371,6 +376,7 @@ module cpu (
                             idex_mem_data_width <= `MMU_WIDTH_WORD;
                         end
                     endcase
+
                 end
 
                 // B-type instructions

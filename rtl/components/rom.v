@@ -1,6 +1,6 @@
 module rom #(
     parameter ADDR_WIDTH = 8,  // 256×4B = 1 KiB
-    parameter ROMFILE=""
+    parameter ROMFILE="../../src/memdump/addi.mem"
 ) (
     input clk,
     input read_enable,

@@ -1,4 +1,6 @@
 `include "../define.v"
+`include "../components/ram.v"
+`include "../components/rom.v"
 
 module mmu_tb();
     reg clk;
