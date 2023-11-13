@@ -20,14 +20,18 @@ module l1_data_cache #(
 );
 
     /*
-     * Outros parâmetros:
-     *  CACHE_ASSOCIATIVITY: Número de vias (blocos por linha de cache)
-     *
-     * Conversões úteis:
-     *  BLOCK_SIZE           = 2**OFFSET_WIDTH (bytes)
-     *  NUM_OF_CACHE_LINES   = 2**INDEX_WIDTH
-     *  NUM_OF_BLOCKS        = NUM_OF_CACHE_LINES * CACHE_ASSOCIATIVITY
-     *  CACHE_SIZE = NUM_OF_BLOCKS * BLOCK_SIZE
+     *  BLOCK_SIZE          = 2**OFFSET_WIDTH (bytes)
+     *  NUM_OF_BLOCKS       = 2**INDEX_WIDTH
+     *  CACHE_SIZE          = NUM_OF_BLOCKS * BLOCK_SIZE
      */
+
+    assign mmu_write_enable = 0;
+    assign mmu_read_enable = 0;
+    assign mmu_mem_signed_read = 0;
+    assign mmu_mem_data_width = 0;
+    assign mmu_data_in = 0;
+    assign mmu_address = 0;
+    assign cache_miss = 0;
+    assign data_out = 0;
 
 endmodule
