@@ -1,7 +1,10 @@
 IO_LOC  "clk" 52;
 IO_PORT "clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
-IO_LOC  "btn1" 3;
+IO_LOC  "reset_n" 3;
+IO_PORT "reset_n" IO_TYPE=LVCMOS18;
+
+IO_LOC  "btn1" 4;
 IO_PORT "btn1" IO_TYPE=LVCMOS18;
 
 IO_LOC  "uart_tx" 17;
@@ -9,6 +12,3 @@ IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=UP;
 
 IO_LOC  "uart_rx" 18;
 IO_PORT "uart_rx" IO_TYPE=LVCMOS33 PULL_MODE=UP;
-
-IO_LOC  "reset_n" 4;
-IO_PORT "reset_n" IO_TYPE=LVCMOS18;
