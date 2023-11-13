@@ -1,6 +1,4 @@
 `include "../define.v"
-`include "../components/ram.v"
-`include "../components/rom.v"
 
 module mmu_tb();
     reg clk;
@@ -57,6 +55,8 @@ module mmu_tb();
     end
     endtask
 
+    // TODO: test is broken, need to be fixed. The issue is that the RAM is not
+    // being read/written, behaviour descripted to make the UART demo work.
     task test_ram_read_and_write();
     begin
         $write("  test_ram_read_and_write:");
@@ -87,7 +87,7 @@ module mmu_tb();
     endtask
 
     initial begin
-        $display("memory_control_tb: starting tests");
+        $display("mmu_tb: starting tests");
 
         reset_n = 1;
         #1;

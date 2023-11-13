@@ -13,8 +13,8 @@ module register_file (
     reg [31:0] registers [0:31];
 
     // Lógica de leitura
-    assign read_data1 = (read_reg1 != 0) ? registers[read_reg1] : 0;
-    assign read_data2 = (read_reg2 != 0) ? registers[read_reg2] : 0;
+    assign read_data1 = (read_reg1 != 0) ? ((write_enable && read_reg1 == write_reg) ? write_data : registers[read_reg1]) : 0;
+    assign read_data2 = (read_reg2 != 0) ? ((write_enable && read_reg2 == write_reg) ? write_data : registers[read_reg2]) : 0;
     assign uart_data = registers[5];
 
     // Lógica de escrita

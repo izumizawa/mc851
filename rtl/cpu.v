@@ -376,7 +376,6 @@ module cpu (
                             idex_mem_data_width <= `MMU_WIDTH_WORD;
                         end
                     endcase
-
                 end
 
                 // B-type instructions
@@ -398,7 +397,8 @@ module cpu (
                     end else if (id_funct3 == 3'b110) begin //BLTU
                     // TODO: BLTU
                     end else if (id_funct3 == 3'b001) begin //BNE
-                    // TODO: BNE
+                        idex_alu_op <= `ALU_SUB;
+                        idex_branch_op <= `BRANCH_BNE;
                     end
                 end
             endcase
