@@ -1,4 +1,4 @@
-`include "../define.v"
+`include "../rtl/define.v"
 
 module alu_module_tb();
     reg  [3:0]   alu_op;

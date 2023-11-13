@@ -1,4 +1,4 @@
-`include "../define.v"
+`include "../rtl/define.v"
 
 module mmu_tb();
     reg clk;
@@ -19,7 +19,7 @@ module mmu_tb();
         forever #1 clk = ~clk;
     end
 
-    mmu #( .ROMFILE("../../src/memdump/addi.mem")) mmu_inst (
+    mmu #( .ROMFILE("../src/memdump/addi.mem")) mmu_inst (
         .clk(clk),
         .reset_n(reset_n),
         .write_enable(write_enable),

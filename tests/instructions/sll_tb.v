@@ -2,7 +2,7 @@ module sll_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/sll.mem")) soc_inst(
+    soc #( .ROMFILE("../src/memdump/sll.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
