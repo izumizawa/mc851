@@ -26,11 +26,13 @@ module l1_instruction_cache #(
     assign l1_index     = address[INDEX_WIDTH+OFFSET_WIDTH-1 : OFFSET_WIDTH];
     assign l1_offset    = address[OFFSET_WIDTH-1:0];
 
-    integer i;
-    initial begin
+
+    initial begin: label0
+        integer i;
         for (i = 0; i < NUM_OF_BLOCKS; i = i + 1) begin
-            // l1_block_valid[i] = 0;
+            l1_block_valid[i] = 0;
             l1_tag_array[i] = 0;
+            l1_block_data[i] = 0;
         end
     end
 
