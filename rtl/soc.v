@@ -26,8 +26,7 @@ module soc #(
         .mmu_mem_signed_read(mmu_mem_signed_read),
         .mmu_mem_data_width(mmu_mem_data_width),
         .mmu_address(mmu_address),
-        .mmu_data_in(mmu_data_in),
-        .uart_data(data)
+        .mmu_data_in(mmu_data_in)
     );
 
     mmu #( .ROMFILE(ROMFILE)) mmu_inst (
