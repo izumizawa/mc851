@@ -54,6 +54,27 @@ module mmu #(
     );
     // -------------------------------------------------------------------------
 
+    /***************************************************************************
+     * UART (dev)
+     */
+    reg uart_write_enable;
+    reg uart_read_enable;
+    wire  [uart_ADDR_WIDTH-1:0] uart_address;
+    wire  [31:0] uart_data_in;
+    wire [31:0] uart_data_out;
+
+    uart uart_inst (
+        .clk            (clk                ),
+        .write_enable   (uart_write_enable   ),
+        .read_enable    (uart_read_enable    ),
+        .address        (uart_address        ),
+        .data_in        (uart_data_in        ),
+        .data_out       (uart_data_out       )
+        .uart_tx        (uart_tx            )
+        .uart_rx        (uart_rx            )
+    );
+    // -------------------------------------------------------------------------
+
     reg [31:0] data_out_aux;    // Saída de uma única leitura, selecionada dentre os dispositivos
     reg [31:0] data_in_aux;     // Entrada de uma única escrita, distribuída para os dispositivos
     reg [31:0] address_aux;     // Endereço de um único acesso de memória
@@ -88,6 +109,8 @@ module mmu #(
     localparam ROM_RANGE    = 24;
     localparam RAM_SELECT   = 8'h01;
     localparam RAM_RANGE    = 24;
+    localparam UART_SELECT   = 8'h02;
+    localparam UART_RANGE    = 24;
 
     // Selecionar dispositivo de escrita/leitura com base no endereço
     always @(*) begin
@@ -100,6 +123,10 @@ module mmu #(
             rom_read_enable = read_enable_aux;
             data_out_aux = rom_data_out;
         end else if (address[31:RAM_RANGE] == RAM_SELECT) begin
+            ram_write_enable = write_enable_aux;
+            ram_read_enable = read_enable_aux;
+            data_out_aux = ram_data_out;
+        end else if (address[31:UART_RANGE] == UART_SELECT) begin
             ram_write_enable = write_enable_aux;
             ram_read_enable = read_enable_aux;
             data_out_aux = ram_data_out;
