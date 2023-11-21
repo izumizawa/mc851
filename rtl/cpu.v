@@ -296,21 +296,19 @@ module cpu (
                 idex_imm <= { { 20 { id_b_imm[12] } }, id_b_imm[11:0] };
 
                 idex_alu_src <= `ALU_SRC_FROM_REG;
+                idex_alu_op <= `ALU_SUB;
 
                 if (id_funct3 == `BRANCH_BEQ) begin // BEQ
-                    idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BEQ;
-
-                end else if (id_funct3 == 3'b101) begin //BGE
-                // TODO: BGE
-                end else if (id_funct3 == 3'b111) begin //BGEU
-                // TODO: BGEU
-                end else if (id_funct3 == 3'b100) begin //BLT
-                // TODO: BLT
-                end else if (id_funct3 == 3'b110) begin //BLTU
-                // TODO: BLTU
-                end else if (id_funct3 == 3'b001) begin //BNE
-                    idex_alu_op <= `ALU_SUB;
+                end else if (id_funct3 == `BRANCH_BGE) begin //BGE
+                    idex_branch_op <= `BRANCH_BGE;
+                end else if (id_funct3 == `BRANCH_BGEU) begin //BGEU
+                    idex_branch_op <= `BRANCH_BGEU;
+                end else if (id_funct3 == `BRANCH_BLT) begin //BLT
+                    idex_branch_op <= `BRANCH_BLT;
+                end else if (id_funct3 == `BRANCH_BLTU) begin //BLTU
+                    idex_branch_op <= `BRANCH_BLTU;
+                end else if (id_funct3 == `BRANCH_BNE) begin //BNE
                     idex_branch_op <= `BRANCH_BNE;
                 end
             end

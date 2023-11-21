@@ -47,6 +47,10 @@ iverilog -I ../ -o instructions/beq.vvp instructions/beq_tb.v ../soc.v ../cpu.v 
 vvp ./instructions/beq.vvp
 echo ""
 
+iverilog -I ../ -o instructions/bne.vvp instructions/bne_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v
+vvp ./instructions/bne.vvp
+echo ""
+
 iverilog -I ../ -o instructions/or.vvp instructions/or_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v
 vvp ./instructions/or.vvp
 echo ""
