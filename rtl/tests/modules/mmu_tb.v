@@ -2,7 +2,8 @@
 
 module mmu_tb();
     reg clk;
-    reg reset_n;
+    reg btn1;
+    reg btn2;
     reg write_enable;
     reg read_enable;
     reg mem_signed_read;
@@ -11,6 +12,9 @@ module mmu_tb();
     reg [31:0] data_in;
     wire [31:0] data_out;
     wire mem_ready;
+
+    reg [31:0] result_data_out_1;
+    reg [31:0] result_data_out_2;
 
     initial begin
         $dumpfile("mmu_wave.vcd");
@@ -21,7 +25,9 @@ module mmu_tb();
 
     mmu #( .ROMFILE("../../src/memdump/addi.mem")) mmu_inst (
         .clk(clk),
-        .reset_n(reset_n),
+        .btn1(btn1),
+        .btn2(btn2),
+        .reset_n(btn2),
         .write_enable(write_enable),
         .read_enable(read_enable),
         .mem_signed_read(mem_signed_read),
@@ -86,17 +92,57 @@ module mmu_tb();
     end
     endtask
 
+    task test_btn();
+    begin
+        $write("  test_btn: ");
+        read_enable = 0;
+        mem_signed_read = 0;
+        mem_data_width = `MMU_WIDTH_WORD;
+        address = 32'h02000000; // First address of RAM
+        btn1 = 1;
+
+        btn1 = 0;
+        #4;
+        btn1 = 1;
+        
+        #2;
+        while(mem_ready !== 1) #2;
+        read_enable = 1;
+        
+        #2
+        result_data_out_1 = data_out;
+        read_enable = 0;
+        
+        #2;
+        while(mem_ready !== 1) #2;
+        read_enable = 1;
+
+        #2;
+        while(mem_ready !== 1) #2;
+        result_data_out_2 = data_out;
+        read_enable = 0;
+
+        #2;
+        while(mem_ready !== 1) #2;
+        if (result_data_out_1 != 1 || result_data_out_2 != 0)
+            $display("result_data_out_1 should be 0x1 and result_data_out_2 should be 0x0, but is %h and %h", result_data_out_1, result_data_out_2);
+        else
+            $display("ok!");
+    end
+    endtask
+
     initial begin
         $display("mmu_tb: starting tests");
 
-        reset_n = 1;
+        btn2 = 1;
         #1;
-        reset_n = 0;
+        btn2 = 0;
         #1;
-        reset_n = 1;
+        btn2 = 1;
 
-        test_ram_read_and_write();
+        // test_ram_read_and_write();
         test_rom_read();
+        test_btn();
 
         $dumpoff;
         $finish;

@@ -12,12 +12,13 @@ module btn #(
     reg btn1_buffer;
     reg btn2_buffer;
 
-    always @(negedge btn1, negedge btn2) begin
-        btn1_buffer <= ~btn1; // sets btn1_buffer to btn1 signal
-        btn2_buffer <= ~btn2; // sets btn2_buffer to btn2 signal
-    end
-
     always @(posedge clk) begin
+        if (!btn1)
+            btn1_buffer <= ~btn1;
+        
+        if (!btn2) 
+            btn2_buffer <= ~btn2;
+
         if (read_enable) begin
             case (address)
                 0: begin

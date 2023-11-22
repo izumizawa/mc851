@@ -32,10 +32,11 @@ module btn_tb();
     task test_btn();
     begin
         $write("  test_btn: ");
-
         btn1 = 1;
-        #1
+
         btn1 = 0;
+        #4
+        btn1 = 1;
         
         #2
         read_enable = 1;
