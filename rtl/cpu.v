@@ -102,7 +102,34 @@ module cpu (
                     branch_taken = 1;
                 end
             end
-            //TODO: BGE, BGEU, BLT, BLTU, BNE, ...
+            `BRANCH_BGE: begin
+                if ($signed(exmem_alu_out) >= 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BGEU: begin
+                if (exmem_alu_out >= 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BLT: begin
+                if ($signed(exmem_alu_out) < 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BLTU: begin
+                if (exmem_alu_out < 32'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
             default: begin
                 idex_reset = 0;
                 exmem_reset = 0;

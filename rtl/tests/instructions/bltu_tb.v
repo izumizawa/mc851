@@ -1,25 +1,25 @@
-module bne_tb();
+module bltu_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/bne.mem")) soc_inst(
+    soc #( .ROMFILE("../../src/memdump/bltu.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
 
     initial begin
-        $dumpfile("bne_wave.vcd");
+        $dumpfile("bltu_wave.vcd");
         $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
-    task test_bne();
+    task test_bltu();
     begin
-        $write("  test_bne: ");
+        $write("  test_bltu: ");
 
-        #10; // wait for bne to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2 && soc_inst.cpu_inst.pc == 32'h0)
+        #12; // wait for bltu to complete
+        if(soc_inst.cpu_inst.regfile.registers[5] == 32'hFFFFFFFF && soc_inst.cpu_inst.regfile.registers[6] == 32'h0 && soc_inst.cpu_inst.pc == 32'h0)
             $display(" passed!");
         else
             $error("    pc should be 32'h0, but is %h", soc_inst.cpu_inst.pc);
@@ -29,7 +29,7 @@ module bne_tb();
     endtask
 
      initial begin
-        $display("bne_tb: starting tests");
+        $display("bltu_tb: starting tests");
 
         reset_n = 1;
         #1;
@@ -37,7 +37,7 @@ module bne_tb();
         #1;
         reset_n = 1;
 
-        test_bne();
+        test_bltu();
 
         $dumpoff;
         $finish;
