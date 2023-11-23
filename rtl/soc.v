@@ -3,7 +3,6 @@ module soc #(
     parameter ROMFILE="../src/memdump/addi.mem"
 ) (
     input clk,
-    input reset_n,
     input btn1,
     input btn2,
     output uart_tx
@@ -20,7 +19,7 @@ module soc #(
 
     cpu cpu_inst (
         .clk (clk),
-        .reset_n (reset_n),
+        .reset_n (btn2),
         .mmu_mem_ready(mmu_mem_ready),
         .mmu_data_out(mmu_data_out),
         .mmu_write_enable(mmu_write_enable),
@@ -36,7 +35,7 @@ module soc #(
         .clk(clk),
         .btn1(btn1),
         .btn2(btn2),
-        .reset_n(reset_n),
+        .reset_n(btn2),
         .write_enable(mmu_write_enable),
         .read_enable(mmu_read_enable),
         .mem_signed_read(mmu_signed_read),
