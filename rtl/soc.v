@@ -5,6 +5,7 @@ module soc #(
     input clk,
     input reset_n,
     input btn1,
+    input btn2,
     output uart_tx
 );
     wire         mmu_mem_ready;
@@ -33,6 +34,8 @@ module soc #(
 
     mmu #( .ROMFILE(ROMFILE)) mmu_inst (
         .clk(clk),
+        .btn1(btn1),
+        .btn2(btn2),
         .reset_n(reset_n),
         .write_enable(mmu_write_enable),
         .read_enable(mmu_read_enable),
