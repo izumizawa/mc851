@@ -44,8 +44,6 @@ module cpu (
     reg exmem_mem_write;
     reg [31:0] exmem_branch_target;
     //TODO: Substituir pelos nomes explícitos das flags conforme necessário (ex.: zero, negative, overflow, carry)
-    reg [31:0] exmem_alu_input_a;
-    reg [31:0] exmem_alu_input_b;
     reg [ 3:0] exmem_flags;
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
@@ -91,42 +89,42 @@ module cpu (
                 branch_taken = 0;
             end
             `BRANCH_BEQ: begin
-                if (exmem_alu_input_a == exmem_alu_input_b) begin
+                if (exmem_alu_out == 32'b0) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BNE: begin
-                if (exmem_alu_input_a != exmem_alu_input_b) begin
+                if (exmem_alu_out != 32'b0) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BGE: begin
-                if ($signed(exmem_alu_input_a) >= $signed(exmem_alu_input_b)) begin
+                if (exmem_alu_out == 1'b0) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BGEU: begin
-                if (exmem_alu_input_a >= exmem_alu_input_b) begin
+                if (exmem_alu_out == 1'b0) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BLT: begin
-                if ($signed(exmem_alu_input_a) < $signed(exmem_alu_input_b)) begin
+                if (exmem_alu_out == 1'b1) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BLTU: begin
-                if (exmem_alu_input_a < exmem_alu_input_b) begin
+                if (exmem_alu_out == 1'b1) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
@@ -201,6 +199,7 @@ module cpu (
     // B-type b_imm
     assign id_b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
     assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
+    assign id_j_imm = { { 11 {ifid_ir[31] } }, ifid_ir[31], ifid_ir[19:12], ifid_ir[20], ifid_ir[30:21], 1'b0 };
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
@@ -323,23 +322,35 @@ module cpu (
             // B-type instructions
             7'b1100011: begin
                 idex_imm <= { { 20 { id_b_imm[12] } }, id_b_imm[11:0] };
-
                 idex_alu_src <= `ALU_SRC_FROM_REG;
-                idex_alu_op <= `ALU_SUB;
 
                 if (id_funct3 == `BRANCH_BEQ) begin // BEQ
+                    idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BEQ;
                 end else if (id_funct3 == `BRANCH_BGE) begin //BGE
+                    idex_alu_op <= `ALU_SLT;
                     idex_branch_op <= `BRANCH_BGE;
                 end else if (id_funct3 == `BRANCH_BGEU) begin //BGEU
+                    idex_alu_op <= `ALU_SLTU;
                     idex_branch_op <= `BRANCH_BGEU;
                 end else if (id_funct3 == `BRANCH_BLT) begin //BLT
+                    idex_alu_op <= `ALU_SLT;
                     idex_branch_op <= `BRANCH_BLT;
                 end else if (id_funct3 == `BRANCH_BLTU) begin //BLTU
+                    idex_alu_op <= `ALU_SLTU;
                     idex_branch_op <= `BRANCH_BLTU;
                 end else if (id_funct3 == `BRANCH_BNE) begin //BNE
+                    idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BNE;
                 end
+            end
+
+            // JAL instruction
+            7'b1101111: begin
+                idex_reg_write <=  1;
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_j_imm;
             end
         endcase
     end
@@ -417,8 +428,6 @@ module cpu (
             exmem_reg_write <= idex_reg_write;
 
             exmem_alu_out <= alu_out;
-            exmem_alu_input_a <= alu_input_a;
-            exmem_alu_input_b <= alu_input_b;
         end
     end
     // -------------------------------------------------------------------------
