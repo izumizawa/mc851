@@ -44,6 +44,8 @@ module cpu (
     reg exmem_mem_write;
     reg [31:0] exmem_branch_target;
     //TODO: Substituir pelos nomes explícitos das flags conforme necessário (ex.: zero, negative, overflow, carry)
+    reg [31:0] exmem_alu_input_a;
+    reg [31:0] exmem_alu_input_b;
     reg [ 3:0] exmem_flags;
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
@@ -89,42 +91,42 @@ module cpu (
                 branch_taken = 0;
             end
             `BRANCH_BEQ: begin
-                if (exmem_alu_out == 32'b0) begin
+                if (exmem_alu_input_a == exmem_alu_input_b) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BNE: begin
-                if (exmem_alu_out != 32'b0) begin
+                if (exmem_alu_input_a != exmem_alu_input_b) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BGE: begin
-                if ($signed(exmem_alu_out) >= 32'b0) begin
+                if ($signed(exmem_alu_input_a) >= $signed(exmem_alu_input_b)) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BGEU: begin
-                if (exmem_alu_out >= 32'b0) begin
+                if (exmem_alu_input_a >= exmem_alu_input_b) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BLT: begin
-                if ($signed(exmem_alu_out) < 32'b0) begin
+                if ($signed(exmem_alu_input_a) < $signed(exmem_alu_input_b)) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
                 end
             end
             `BRANCH_BLTU: begin
-                if (exmem_alu_out < 32'b0) begin
+                if (exmem_alu_input_a < exmem_alu_input_b) begin
                     idex_reset = 1;
                     exmem_reset = 1;
                     branch_taken = 1;
@@ -415,6 +417,8 @@ module cpu (
             exmem_reg_write <= idex_reg_write;
 
             exmem_alu_out <= alu_out;
+            exmem_alu_input_a <= alu_input_a;
+            exmem_alu_input_b <= alu_input_b;
         end
     end
     // -------------------------------------------------------------------------
