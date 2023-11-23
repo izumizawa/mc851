@@ -352,6 +352,14 @@ module cpu (
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= id_j_imm;
             end
+
+            // JALR instruction
+            7'b1100111: begin
+                idex_reg_write <=  1;
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_i_imm;
+            end
         endcase
     end
     end
