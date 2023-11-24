@@ -46,10 +46,6 @@ module soc #(
         .mem_ready(mmu_mem_ready)
     );
 
-
-// LED TEST
-reg [5:0] ledCounter = 0;
-
 // UART TEST
 reg [3:0] txState = 0;
 reg [24:0] txCounter = 0;
@@ -97,7 +93,6 @@ always @(posedge clk) begin
                 txCounter <= 0;
             end else begin
                 txCounter <= txCounter + 1;
-                ledCounter <= ledCounter + 1;
             end
         end
         TX_STATE_WRITE: begin
@@ -112,7 +107,6 @@ always @(posedge clk) begin
                 txCounter <= 0;
             end else begin
                 txCounter <= txCounter + 1;
-                ledCounter <= ledCounter + 1;
             end
         end
         TX_STATE_STOP_BIT: begin
@@ -127,7 +121,6 @@ always @(posedge clk) begin
                 txCounter <= 0;
             end else begin
                 txCounter <= txCounter + 1;
-                ledCounter <= ledCounter + 1;
             end
         end
         TX_STATE_DEBOUNCE: begin
@@ -136,13 +129,9 @@ always @(posedge clk) begin
                     txState <= TX_STATE_IDLE;
             end else begin
                 txCounter <= txCounter + 1;
-                ledCounter <= ledCounter + 1;
             end
         end
     endcase
 end
-
-// trying to count the UART states through led counter
-assign led = ledCounter;
 
 endmodule
