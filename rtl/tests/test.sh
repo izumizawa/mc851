@@ -15,7 +15,7 @@ iverilog -o modules/register_file.vvp modules/register_file_tb.v ../components/r
 vvp ./modules/register_file.vvp
 echo ""
 
-# Test Register File
+# Test button peripheral
 iverilog -o modules/btn.vvp modules/btn_tb.v ../components/btn.v
 vvp ./modules/btn.vvp
 echo ""
