@@ -20,6 +20,11 @@ iverilog -o modules/btn.vvp modules/btn_tb.v ../components/btn.v
 vvp ./modules/btn.vvp
 echo ""
 
+# Test LED
+iverilog -o modules/led.vvp modules/led_tb.v ../components/led.v
+vvp ./modules/led.vvp
+echo ""
+
 # echo "===============================Testing integration=========================="
 
 iverilog -I ../ -o integration/forwarding_unit.vvp integration/forwarding_unit_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v
