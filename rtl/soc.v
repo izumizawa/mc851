@@ -81,7 +81,6 @@ always @(posedge clk) begin
             end
             else begin
                 txPinRegister <= 1;
-                ledCounter <= ledCounter + 1;
             end
         end
         TX_STATE_START_BIT: begin
