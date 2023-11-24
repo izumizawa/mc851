@@ -34,5 +34,6 @@
 `define BRANCH_BGE      3'b101
 `define BRANCH_BLTU     3'b110
 `define BRANCH_BGEU     3'b111
+`define BRANCH_JUMP     3'b011
 
 `endif

@@ -130,6 +130,11 @@ module cpu (
                     branch_taken = 1;
                 end
             end
+            `BRANCH_JUMP: begin
+                idex_reset = 1;
+                exmem_reset = 1;
+                branch_taken = 1;
+            end
             default: begin
                 idex_reset = 0;
                 exmem_reset = 0;
@@ -164,6 +169,7 @@ module cpu (
     wire [31:0] id_i_imm;
     wire [12:0] id_b_imm;
     wire [31:0] id_s_imm;
+    wire [31:0] id_j_imm;
     wire [31:0] id_shamt;
     wire [ 4:0] id_rs1;
 	wire [ 4:0] id_rs2;
@@ -347,19 +353,21 @@ module cpu (
 
             // JAL instruction
             7'b1101111: begin
-                idex_reg_write <=  1;
-                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_reg_write <= 1;
+                idex_alu_src <= `ALU_SRC_FROM_REG;
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= id_j_imm;
+                idex_branch_op <= `BRANCH_JUMP;
             end
 
             // JALR instruction
-            7'b1100111: begin
-                idex_reg_write <=  1;
-                idex_alu_src <= `ALU_SRC_FROM_IMM;
-                idex_alu_op <= `ALU_ADD;
-                idex_imm <= id_i_imm;
-            end
+            // 7'b1100111: begin
+            //     idex_reg_write <= 1;
+            //     idex_alu_src <= `ALU_SRC_FROM_REG;
+            //     idex_alu_op <= `ALU_ADD;
+            //     idex_imm <= id_i_imm;
+            //     idex_branch_op = `BRANCH_JUMP;
+            // end
         endcase
     end
     end
@@ -387,6 +395,8 @@ module cpu (
             alu_input_a = exmem_alu_out;
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs1) begin
             alu_input_a = wb_data;
+        end else if (idex_branch_op == `BRANCH_JUMP) begin
+            alu_input_a = idex_pc;
         end else begin
             alu_input_a = idex_data_read_1;
         end
@@ -397,6 +407,8 @@ module cpu (
             alu_input_b = exmem_alu_out;
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs2) begin
             alu_input_b = wb_data;
+        end else if (idex_branch_op == `BRANCH_JUMP) begin
+            alu_input_b = 4;
         end else begin
             alu_input_b = idex_data_read_2;
         end
