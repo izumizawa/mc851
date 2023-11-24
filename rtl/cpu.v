@@ -1,187 +1,115 @@
 `include "define.v"
 
 module cpu (
-    input wire          clk,
-    input wire          reset_n,
-    input wire          mmu_mem_ready,
-    input wire [31:0]   mmu_data_out,
-    output reg          mmu_write_enable,
-    output reg          mmu_read_enable,
-    output reg          mmu_mem_signed_read,
-    output reg [ 1:0]   mmu_mem_data_width,
-    output reg [31:0]   mmu_address,
-    output reg [31:0]   mmu_data_in
+    input  wire         clk,
+    input  wire         reset_n,
+
+    input  wire         immu_mem_ready,
+    input  wire [31:0]  immu_data_out,
+    output wire         immu_write_enable,
+    output wire         immu_read_enable,
+    output wire         immu_signed_read,
+    output wire [ 1:0]  immu_data_width,
+    output wire [31:0]  immu_address,
+    output wire [31:0]  immu_data_in,
+
+    input  wire         dmmu_mem_ready,
+    input  wire  [31:0] dmmu_data_out,
+    output wire         dmmu_write_enable,
+    output wire         dmmu_read_enable,
+    output wire         dmmu_signed_read,
+    output wire [ 1:0]  dmmu_data_width,
+    output wire [31:0]  dmmu_address,
+    output wire [31:0]  dmmu_data_in
 );
     // PC (Program Counter)
-    reg [31:0] pc;
-    wire pc_stall;
+    wire        stall_pc;
+    reg [31:0]  pc;
 
     // IF/ID Register
-    wire ifid_flush;
-    wire ifid_stall;
-    reg [31:0] ifid_pc;
-    reg [31:0] ifid_ir;
+    wire        flush_ifid;
+    wire        stall_ifid;
+    reg [31:0]  ifid_pc;
+    reg [31:0]  ifid_ir;
 
     // ID/EX Register
-    wire idex_flush;
-    wire idex_stall;
-    reg [31:0] idex_pc;
-    reg [2:0] idex_branch_op;
-    reg idex_reg_write;
-    reg idex_mem_read;
-    reg idex_mem_write;
-    reg [ 1:0] idex_mem_data_width;
-    reg idex_mem_to_reg;
-    reg idex_alu_src;
-    reg [ 3:0] idex_alu_op;
-    reg [31:0] idex_data_read_1;
-    reg [31:0] idex_data_read_2;
-    reg [ 4:0] idex_rs1;
-	reg [ 4:0] idex_rs2;
-	reg [ 4:0] idex_rd;
-	reg [31:0] idex_imm;
+    wire        flush_idex;
+    wire        stall_idex;
+    reg [31:0]  idex_pc;
+    reg [2:0]   idex_branch_op;
+    reg         idex_reg_write;
+    reg         idex_mem_read;
+    reg         idex_mem_write;
+    reg         idex_dmmu_signed_read; // TODO: Decodificar esse sinal p/ instruções de load/store
+    reg [ 1:0]  idex_mem_data_width;
+    reg         idex_mem_to_reg;
+    reg         idex_alu_src;
+    reg [ 3:0]  idex_alu_op;
+    reg [31:0]  idex_data_read_1;
+    reg [31:0]  idex_data_read_2;
+    reg [ 4:0]  idex_rs1;
+	reg [ 4:0]  idex_rs2;
+	reg [ 4:0]  idex_rd;
+	reg [31:0]  idex_imm;
 
     // EX/MEM Register
-    wire exmem_flush;
-    wire exmem_stall;
-    reg exmem_mem_to_reg;
-    reg exmem_reg_write;
-    reg exmem_mem_read;
-    reg exmem_mem_write;
-    reg [ 1:0] exmem_mem_data_width; // TODO: Passar pra cache de dados
-    reg [31:0] exmem_branch_target;
-    reg exmem_branch_taken;
-    reg [31:0] exmem_alu_out;
-    reg [31:0] exmem_data_read_2;
-    reg [ 4:0] exmem_rd;
+    wire        flush_exmem;
+    wire        stall_exmem;
+    reg         exmem_mem_to_reg;
+    reg         exmem_reg_write;
+    reg         exmem_mem_read;
+    reg         exmem_mem_write;
+    reg         exmem_dmmu_signed_read;
+    reg [ 1:0]  exmem_dmmu_data_width;
+    reg [31:0]  exmem_branch_target;
+    reg         exmem_branch_taken;
+    reg [31:0]  exmem_alu_out;
+    reg [31:0]  exmem_data_read_2;
+    reg [ 4:0]  exmem_rd;
 
     // MEM/WB Register
-    wire memwb_flush;
-    reg [31:0] memwb_mem_data_read;
-    reg [31:0] memwb_alu_out;
-    reg [ 4:0] memwb_rd;
-    reg memwb_reg_write;
-    reg memwb_mem_to_reg;
+    wire        flush_memwb;
+    reg [31:0]  memwb_mem_data_read;
+    reg [31:0]  memwb_alu_out;
+    reg [ 4:0]  memwb_rd;
+    reg         memwb_reg_write;
+    reg         memwb_mem_to_reg;
 
     // Writeback
     wire [31:0] wb_data;
 
 
     /***************************************************************************
-     * L1 Instruction Cache
-     */
-    reg l1i_mmu_mem_ready;
-    wire [31:0] l1i_mmu_data_out;
-    wire [31:0] l1i_mmu_address;
-    wire l1i_cache_miss;
-    wire [31:0] l1i_data_out;
+     * Controle de Pipeline / Detecção de Hazards de Controle
+     **************************************************************************/
+    // Flush Register
+    assign flush_ifid   = (stall_pc && !stall_idex) || exmem_branch_taken;
+    assign flush_idex   = exmem_branch_taken;
+    assign flush_exmem  = exmem_branch_taken;
+    assign flush_memwb  = stall_exmem;
 
-    l1_instruction_cache l1i_inst (
-        .clk(clk),
-        .reset_n(reset_n),
-        .address(pc),
-        .mmu_mem_ready(l1i_mmu_mem_ready),
-        .mmu_data_out(l1i_mmu_data_out),
-        .mmu_address(l1i_mmu_address),
-        .cache_miss(l1i_cache_miss),
-        .data_out(l1i_data_out)
-    );
+    // Stall Pipeline Stage
+    assign stall_pc     = stall_ifid || !immu_mem_ready;
+    assign stall_ifid   = stall_idex;
+    assign stall_idex   = stall_exmem;
+    assign stall_exmem  = !dmmu_mem_ready;
     // -------------------------------------------------------------------------
-
-
-    /***************************************************************************
-     * L1 Data Cache
-     */
-    reg l1d_mmu_mem_ready;
-    wire [31:0] l1d_mmu_data_out;
-    wire l1d_mmu_write_enable;
-    wire l1d_mmu_read_enable;
-    wire l1d_mmu_mem_signed_read;
-    wire [ 1:0] l1d_mmu_mem_data_width;
-    wire [31:0] l1d_mmu_data_in;
-    wire [31:0] l1d_mmu_address;
-    wire l1d_cache_miss;
-    wire [31:0] l1d_data_out;
-
-    l1_data_cache l1d_inst (
-        .clk(clk),
-        .reset_n(reset_n),
-        .mem_write(exmem_mem_write),
-        .mem_read(exmem_mem_read),
-        .address(exmem_alu_out),
-        .data_in(exmem_data_read_2),
-        .mmu_mem_ready(l1d_mmu_mem_ready),
-        .mmu_data_out(l1d_mmu_data_out),
-        .mmu_write_enable(l1d_mmu_write_enable),
-        .mmu_read_enable(l1d_mmu_read_enable),
-        .mmu_mem_signed_read(l1d_mmu_mem_signed_read),
-        .mmu_mem_data_width(l1d_mmu_mem_data_width),
-        .mmu_data_in(l1d_mmu_data_in),
-        .mmu_address(l1d_mmu_address),
-        .cache_miss(l1d_cache_miss),
-        .data_out(l1d_data_out)
-    );
-    // -------------------------------------------------------------------------
-
-
-    // Memory Acess Control
-    assign l1d_mmu_data_out = mmu_data_out;
-    assign l1i_mmu_data_out = mmu_data_out;
-
-    always @(*) begin
-        l1d_mmu_mem_ready = 0;
-        l1i_mmu_mem_ready = 0;
-
-        if (l1d_cache_miss) begin
-            mmu_write_enable = l1d_mmu_write_enable;
-            mmu_read_enable = l1d_mmu_read_enable;
-            mmu_mem_signed_read = l1d_mmu_mem_signed_read;
-            mmu_mem_data_width = l1d_mmu_mem_data_width;
-            mmu_address = l1d_mmu_address;
-            mmu_data_in = l1d_mmu_data_in;
-
-            l1d_mmu_mem_ready = mmu_mem_ready;
-        end else if (l1i_cache_miss) begin
-            mmu_write_enable = 0;
-            mmu_read_enable = 1;
-            mmu_mem_signed_read = 0;
-            mmu_mem_data_width = `MMU_WIDTH_WORD;
-            mmu_address = l1i_mmu_address;
-            mmu_data_in = 0;
-
-            l1i_mmu_mem_ready = mmu_mem_ready;
-        end else begin
-            mmu_write_enable = 0;
-            mmu_read_enable = 0;
-            mmu_mem_signed_read = 0;
-            mmu_mem_data_width = `MMU_WIDTH_WORD;
-            mmu_address = 0;
-            mmu_data_in = 0;
-        end
-    end
-
-
-    // Flush
-    assign ifid_flush = (pc_stall && !idex_stall) || exmem_branch_taken;
-    assign idex_flush = exmem_branch_taken;
-    assign exmem_flush = exmem_branch_taken;
-    assign memwb_flush = exmem_stall;
-
-    // Stall
-    assign pc_stall = ifid_stall || l1i_cache_miss;
-    assign ifid_stall = idex_stall;
-    assign idex_stall = exmem_stall;
-    assign exmem_stall = l1d_cache_miss;
 
 
     /***************************************************************************
      * Instruction Fetch (IF) stage
      **************************************************************************/
+    assign immu_write_enable = 0;
+    assign immu_read_enable = 1;
+    assign immu_signed_read = 0;
+    assign immu_data_width = `MMU_WIDTH_WORD;
+    assign immu_address = pc;
+    assign immu_data_in = 0;
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
             pc <= 0;
-        end else if (!pc_stall) begin
+        end else if (!stall_pc) begin
             if (exmem_branch_taken) begin
                 pc <= exmem_branch_target;
             end else begin
@@ -194,13 +122,13 @@ module cpu (
         if(!reset_n) begin
             ifid_pc <= 32'b0;
             ifid_ir <= `RISCV_NOP;
-        end else if(!ifid_stall) begin
-            if (ifid_flush) begin
+        end else if(!stall_ifid) begin
+            if (flush_ifid) begin
                 ifid_pc <= 32'b0;
                 ifid_ir <= `RISCV_NOP;
             end else begin
                 ifid_pc <= pc;
-                ifid_ir <= l1i_data_out;
+                ifid_ir <= immu_data_out;
             end
         end
     end
@@ -269,8 +197,8 @@ module cpu (
             idex_imm <= 32'b0;
             idex_reg_write <= 0;
             idex_pc <= 0;
-        end else if (!idex_stall) begin
-            if (idex_flush) begin
+        end else if (!stall_idex) begin
+            if (flush_idex) begin
                 idex_branch_op <= `NOT_BRANCH;
                 idex_mem_read <= 0;
                 idex_mem_write <= 0;
@@ -419,14 +347,14 @@ module cpu (
     wire [31:0] alu_out;
 
     // Arithmetic Logic Unit (ALU)
-    alu_module alu_inst(
+    alu_module alu_inst (
         .alu_op(idex_alu_op),
         .alu_input_a(alu_input_a),
         .alu_input_b(alu_input_b),
         .alu_out(alu_out)
     );
 
-    // Forwarding Unit.
+    // ALU Input Selection & Forwarding Unit.
     always @(*) begin
         if (exmem_rd != 0 && exmem_reg_write && exmem_rd == idex_rs1) begin
             alu_input_a = exmem_alu_out;
@@ -454,31 +382,34 @@ module cpu (
             exmem_reg_write <= 0;
             exmem_mem_read <= 0;
             exmem_mem_write <= 0;
-            exmem_mem_data_width <= 0;
+            exmem_dmmu_signed_read <= 0;
+            exmem_dmmu_data_width <= 0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
             exmem_branch_target <= 0;
             exmem_branch_taken <= 0;
-        end else if (!exmem_stall) begin
-            if (exmem_flush) begin
+        end else if (!stall_exmem) begin
+            if (flush_exmem) begin
                 exmem_mem_to_reg <= 0;
                 exmem_reg_write <= 0;
                 exmem_mem_read <= 0;
                 exmem_mem_write <= 0;
-                exmem_mem_data_width <= 0;
+                exmem_dmmu_signed_read <= 0;
+                exmem_dmmu_data_width <= 0;
                 exmem_data_read_2 <= 32'b0;
                 exmem_rd <= 5'b0;
                 exmem_alu_out <= 0;
                 exmem_branch_target <= 0;
                 exmem_branch_taken <= 0;
             end else begin
+                exmem_mem_to_reg <= idex_mem_to_reg;
+                exmem_reg_write <= idex_reg_write;
                 exmem_mem_read <= idex_mem_read;
                 exmem_mem_write <= idex_mem_write;
-                exmem_mem_to_reg <= idex_mem_to_reg;
-                exmem_mem_data_width <= idex_mem_data_width;
+                exmem_dmmu_signed_read <= idex_dmmu_signed_read;
+                exmem_dmmu_data_width <= idex_mem_data_width;
                 exmem_rd <= idex_rd;
-                exmem_reg_write <= idex_reg_write;
                 exmem_alu_out <= alu_out;
                 exmem_branch_target <= idex_pc + idex_imm;
 
@@ -492,7 +423,7 @@ module cpu (
                     end
 
                     `BRANCH_BNE: begin
-                        if (exmem_alu_out != 32'b0) begin
+                        if (alu_out != 32'b0) begin
                             exmem_branch_taken <= 1;
                         end
                     end
@@ -511,6 +442,13 @@ module cpu (
     /***************************************************************************
      * Memory access (MEM) stage
      **************************************************************************/
+    assign dmmu_write_enable = exmem_mem_write;
+    assign dmmu_read_enable = exmem_mem_read;
+    assign dmmu_signed_read = exmem_dmmu_signed_read;
+    assign dmmu_data_width = exmem_dmmu_data_width;
+    assign dmmu_address = exmem_alu_out;
+    assign dmmu_data_in = exmem_data_read_2;
+
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
             // Reset MEM/WB registers
@@ -519,8 +457,10 @@ module cpu (
             memwb_rd <= 5'b0;
             memwb_reg_write <= 0;
             memwb_mem_to_reg <= 0;
+        end else if (flush_memwb) begin
+            memwb_reg_write <= 0;
         end else begin
-            memwb_mem_data_read <= l1d_data_out;
+            memwb_mem_data_read <= dmmu_data_out;
             memwb_alu_out <= exmem_alu_out;
             memwb_rd <= exmem_rd;
             memwb_reg_write <= exmem_reg_write;
