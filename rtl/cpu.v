@@ -21,7 +21,7 @@ module cpu (
     // ID/EX Register
     reg [31:0] idex_pc;
     reg idex_reset;
-    reg [2:0] idex_branch_op;
+    reg [3:0] idex_branch_op;
     reg idex_reg_write;
     reg idex_mem_read;
     reg idex_mem_write;
@@ -37,7 +37,7 @@ module cpu (
 
     // EX/MEM Register
     reg exmem_reset;
-    reg [2:0] exmem_branch_op;
+    reg [3:0] exmem_branch_op;
     reg exmem_mem_to_reg;
     reg exmem_reg_write;
     reg exmem_mem_read;
@@ -130,7 +130,12 @@ module cpu (
                     branch_taken = 1;
                 end
             end
-            `BRANCH_JUMP: begin
+            `BRANCH_JAL: begin
+                idex_reset = 1;
+                exmem_reset = 1;
+                branch_taken = 1;
+            end
+            `BRANCH_JALR: begin
                 idex_reset = 1;
                 exmem_reset = 1;
                 branch_taken = 1;
@@ -357,17 +362,17 @@ module cpu (
                 idex_alu_src <= `ALU_SRC_FROM_REG;
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= id_j_imm;
-                idex_branch_op <= `BRANCH_JUMP;
+                idex_branch_op <= `BRANCH_JAL;
             end
 
             // JALR instruction
-            // 7'b1100111: begin
-            //     idex_reg_write <= 1;
-            //     idex_alu_src <= `ALU_SRC_FROM_REG;
-            //     idex_alu_op <= `ALU_ADD;
-            //     idex_imm <= id_i_imm;
-            //     idex_branch_op = `BRANCH_JUMP;
-            // end
+            7'b1100111: begin
+                idex_reg_write <= 1;
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_i_imm;
+                idex_branch_op <= `BRANCH_JALR;
+            end
         endcase
     end
     end
@@ -377,6 +382,7 @@ module cpu (
     /***************************************************************************
      * Execute (EX) stage
      **************************************************************************/
+    reg [31:0] ex_jalr_offset;
     reg [31:0] alu_input_a;
     reg [31:0] alu_input_b;
     wire [31:0] alu_out;
@@ -392,13 +398,24 @@ module cpu (
     // Forwarding Unit.
     always @(*) begin
         if (exmem_rd != 0 && exmem_reg_write && exmem_rd == idex_rs1) begin
-            alu_input_a = exmem_alu_out;
+            if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
+                alu_input_a = idex_pc;
+                ex_jalr_offset = exmem_alu_out + idex_imm;
+            end else begin
+                alu_input_a = exmem_alu_out;
+                ex_jalr_offset = 0;
+            end
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs1) begin
-            alu_input_a = wb_data;
-        end else if (idex_branch_op == `BRANCH_JUMP) begin
-            alu_input_a = idex_pc;
+            if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
+                alu_input_a = idex_pc;
+                ex_jalr_offset = wb_data + idex_imm;
+            end else begin
+                alu_input_a = wb_data;
+                ex_jalr_offset = 0;
+            end
         end else begin
             alu_input_a = idex_data_read_1;
+            ex_jalr_offset = 0;
         end
 
         if (idex_alu_src == `ALU_SRC_FROM_IMM) begin
@@ -407,7 +424,7 @@ module cpu (
             alu_input_b = exmem_alu_out;
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs2) begin
             alu_input_b = wb_data;
-        end else if (idex_branch_op == `BRANCH_JUMP) begin
+        end else if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
             alu_input_b = 4;
         end else begin
             alu_input_b = idex_data_read_2;
@@ -439,8 +456,12 @@ module cpu (
             exmem_alu_out <= 0;
             exmem_branch_target <= 0;
         end else begin
+            if (idex_branch_op == `BRANCH_JALR) begin
+                exmem_branch_target <= ex_jalr_offset;
+            end else begin
+                exmem_branch_target <= idex_pc + idex_imm;
+            end
             exmem_branch_op <= idex_branch_op;
-            exmem_branch_target <= idex_pc + idex_imm;
             exmem_mem_read <= idex_mem_read;
             exmem_mem_to_reg <= idex_mem_to_reg;
             exmem_mem_write <= idex_mem_write;

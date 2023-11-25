@@ -7,6 +7,8 @@ module jal_tb();
         .clk(clk)
     );
 
+    reg [31:0] jal_pc;
+
     initial begin
         $dumpfile("jal_wave.vcd");
         $dumpvars;
@@ -19,10 +21,12 @@ module jal_tb();
         $write("  test_jal: ");
 
         #8; // wait for jal to complete
-        if(soc_inst.cpu_inst.pc == 32'h00000008)
+        jal_pc = soc_inst.cpu_inst.pc;
+        #2;
+        if(jal_pc == 32'h00000008 && soc_inst.cpu_inst.regfile.registers[1] == 32'h00000004)
             $display(" passed!");
         else
-            $error("    PC should be 32'h00000008, but is %h", soc_inst.cpu_inst.pc);
+            $error("    PC should be 32'h00000008 and x1 should be 32'h00000004, but is %h and %h", jal_pc, soc_inst.cpu_inst.regfile.registers[1]);
 
         #8;
     end

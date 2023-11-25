@@ -71,6 +71,10 @@ iverilog -I ../ -o instructions/jal.vvp instructions/jal_tb.v ../soc.v ../cpu.v 
 vvp ./instructions/jal.vvp
 echo ""
 
+iverilog -I ../ -o instructions/jalr.vvp instructions/jalr_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v
+vvp ./instructions/jalr.vvp
+echo ""
+
 iverilog -I ../ -o instructions/or.vvp instructions/or_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v
 vvp ./instructions/or.vvp
 echo ""
