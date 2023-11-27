@@ -11,6 +11,7 @@ module mmu #(
     input [31:0] address,
     input [31:0] data_in,
     output reg [31:0] data_out,
+    output [5:0] led,
     output reg mem_ready
 );
 
@@ -72,6 +73,23 @@ module mmu #(
     );
     // -------------------------------------------------------------------------
 
+    /***************************************************************************
+     * LED (Peripheral)
+     */
+    localparam LED_ADDR_WIDTH = 8;
+    reg led_write_enable;
+    wire  [LED_ADDR_WIDTH-1:0] led_address;
+    wire [31:0] led_data_in;
+
+    led #( .ADDR_WIDTH(LED_ADDR_WIDTH) ) led_inst (
+        .clk            (clk                ),
+        .write_enable   (led_write_enable   ),
+        .address        (led_address        ),
+        .data_in        (led_data_in        ),
+        .led            (led                )
+    );
+    // -------------------------------------------------------------------------
+
     reg [31:0] data_out_aux;    // Saída de uma única leitura, selecionada dentre os dispositivos
     reg [31:0] data_in_aux;     // Entrada de uma única escrita, distribuída para os dispositivos
     reg [31:0] address_aux;     // Endereço de um único acesso de memória
@@ -86,9 +104,11 @@ module mmu #(
 
     // Atribuir data_in (onde aplicável) e address de todos os dispositivos
     assign ram_data_in = data_in_aux;
+    assign led_data_in = data_in_aux;
     assign rom_address = address_aux[ROM_ADDR_WIDTH+1:2];
     assign ram_address = address_aux[RAM_ADDR_WIDTH+1:2];
     assign btn_address = address_aux[BTN_ADDR_WIDTH+1:2];
+    assign led_address = address_aux[LED_ADDR_WIDTH+1:2];
 
     assign mem_read_data_1 = data_out_aux;
     assign byte_offset = address[1:0];
@@ -98,6 +118,7 @@ module mmu #(
      * ROM: 0x00000000 .. 0x00FFFFFF
      * RAM: 0x01000000 .. 0x01FFFFFF
      * BTN: 0x02000000 .. 0x02FFFFFF
+     * BTN: 0x03000000 .. 0x03FFFFFF
      *
      * Terminologia:
      * RANGE: Número de bits de endereçamento disponíveis pro dispositivo.
@@ -109,12 +130,15 @@ module mmu #(
     localparam RAM_RANGE    = 24;
     localparam BTN_SELECT   = 8'h02;
     localparam BTN_RANGE    = 24;
+    localparam LED_SELECT   = 8'h03;
+    localparam LED_RANGE    = 24;
 
     // Selecionar dispositivo de escrita/leitura com base no endereço
     always @(*) begin
         rom_read_enable = 0;
         ram_write_enable = 0;
         ram_read_enable = 0;
+        led_write_enable = 0;
         data_out_aux = 0;
 
         if (address[31:ROM_RANGE] == ROM_SELECT) begin
@@ -127,6 +151,8 @@ module mmu #(
         end else if (address[31:BTN_RANGE] == BTN_SELECT) begin
             btn_read_enable = read_enable_aux;
             data_out_aux = btn_data_out;
+        end else if (address[31:LED_RANGE] == LED_SELECT) begin
+            led_write_enable = write_enable_aux;
         end
     end
 

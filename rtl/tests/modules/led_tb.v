@@ -2,7 +2,7 @@ module led_tb();
 
     reg clk;
     reg write_enable;
-    reg [5:0] data_in;
+    reg [31:0] data_in;
     wire [5:0] led;
 
     reg [5:0] led_data_out_1;
@@ -28,11 +28,13 @@ module led_tb();
 
         clk = 0;
         write_enable = 0;
-        data_in = 5'b0;
+        data_in = 32'b0;
 
         #10
         write_enable = 1;
-        data_in = 5'b00001;
+        data_in = 32'b00000000000000000000000000000001;
+
+        #10
         led_data_out_1 = led;
 
         if (led_data_out_1 != 5'b00001)
@@ -49,19 +51,21 @@ module led_tb();
 
         clk = 0;
         write_enable = 0;
-        data_in = 5'b0;
+        data_in = 32'b0;
 
         #10
         write_enable = 1;
-        data_in = 5'b0;
+        data_in = 32'b0;
         led_data_out_2 = led;
 
         #10
         write_enable = 1;
-        data_in = 5'b01010;
+        data_in = 32'b00000000000000000000000000001010;
+
+        #20
         led_data_out_2 = led;
 
-        if (led_data_out_2 != 5'b0)
+        if (led_data_out_2 != 5'b01010)
             $display("   led should be 5'b01010, but it is %b", led_data_out_2);
         else
             $display("passed!");

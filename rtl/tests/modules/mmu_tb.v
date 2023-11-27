@@ -104,15 +104,15 @@ module mmu_tb();
         btn1 = 0;
         #4;
         btn1 = 1;
-        
+
         #2;
         while(mem_ready !== 1) #2;
         read_enable = 1;
-        
+
         #2
         result_data_out_1 = data_out;
         read_enable = 0;
-        
+
         #2;
         while(mem_ready !== 1) #2;
         read_enable = 1;
@@ -131,6 +131,35 @@ module mmu_tb();
     end
     endtask
 
+    task test_led();
+    begin
+        $write("  test_led: ");
+        write_enable = 1;
+        mem_signed_read = 0;
+        mem_data_width = `MMU_WIDTH_WORD;
+        address = 32'h03000000;
+        data_in = 32'h69BABACA; // 32'b1101001101110101011101011001010
+
+        #2;
+        while(mem_ready !== 1) #2;
+
+        write_enable = 1;
+
+        #2;
+        while(mem_ready !== 1) #2;
+
+        #2;
+        write_enable = 0;
+
+        #2;
+
+        if (mmu_inst.led != 5'b01010)
+            $display("   led should be 5'b01010, but it is %b", mmu_inst.led);
+        else
+            $display("passed!");
+    end
+    endtask
+
     initial begin
         $display("mmu_tb: starting tests");
 
@@ -143,6 +172,7 @@ module mmu_tb();
         // test_ram_read_and_write();
         test_rom_read();
         test_btn();
+        test_led();
 
         $dumpoff;
         $finish;

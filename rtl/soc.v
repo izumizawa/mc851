@@ -5,6 +5,7 @@ module soc #(
     input clk,
     input btn1,
     input btn2,
+    output [5:0] led,
     output uart_tx
 );
     wire         mmu_mem_ready;
@@ -43,6 +44,7 @@ module soc #(
         .address(mmu_address),
         .data_in(mmu_data_in),
         .data_out(mmu_data_out),
+        .led(led),
         .mem_ready(mmu_mem_ready)
     );
 
