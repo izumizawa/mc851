@@ -1,35 +1,35 @@
-module sra_tb();
+module add_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/sra.mem")) soc_inst(
+    soc #( .ROMFILE("../src/memdump/add.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
 
     initial begin
-        $dumpfile("sra_wave.vcd");
+        $dumpfile("add_wave.vcd");
         $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
-    task test_sra();
+    task test_add();
     begin
-        $write("  test_sra: ");
+        $write("  test_add: ");
 
-        #14; // wait for sra to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000004)
+        #14; // wait for add to complete
+        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000051)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h00000004, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000051, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
 
         #8;
     end
     endtask
 
      initial begin
-        $display("sra_tb: starting tests");
+        $display("add_tb: starting tests");
 
         reset_n = 1;
         #1;
@@ -37,7 +37,7 @@ module sra_tb();
         #1;
         reset_n = 1;
 
-        test_sra();
+        test_add();
 
         $dumpoff;
         $finish;

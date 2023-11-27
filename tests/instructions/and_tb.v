@@ -1,35 +1,35 @@
-module xor_tb();
+module and_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/xor.mem")) soc_inst(
+    soc #( .ROMFILE("../src/memdump/and.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
 
     initial begin
-        $dumpfile("xor_wave.vcd");
+        $dumpfile("and_wave.vcd");
         $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
-    task test_xor();
+    task test_and();
     begin
-        $write("  test_xor: ");
+        $write("  test_and: ");
 
-        #14; // wait for xor to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h0000000D)
+        #14; // wait for and to complete
+        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000022)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h0000000D, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000022, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
 
         #8;
     end
     endtask
 
      initial begin
-        $display("xor_tb: starting tests");
+        $display("and_tb: starting tests");
 
         reset_n = 1;
         #1;
@@ -37,7 +37,7 @@ module xor_tb();
         #1;
         reset_n = 1;
 
-        test_xor();
+        test_and();
 
         $dumpoff;
         $finish;

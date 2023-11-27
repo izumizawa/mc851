@@ -1,4 +1,5 @@
 `ifndef _define_v_
+`define _define_v_
 
 // RISC-V instructions
 `define RISCV_NOP 32'h00000013

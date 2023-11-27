@@ -2,7 +2,7 @@ module srli_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/srli.mem")) soc_inst(
+    soc #( .ROMFILE("../src/memdump/srli.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );

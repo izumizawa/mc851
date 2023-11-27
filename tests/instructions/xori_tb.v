@@ -1,35 +1,35 @@
-module andi_tb();
+module xori_tb();
     reg clk;
     reg reset_n;
 
-    soc #( .ROMFILE("../../src/memdump/andi.mem")) soc_inst(
+    soc #( .ROMFILE("../src/memdump/xori.mem")) soc_inst(
         .reset_n(reset_n),
         .clk(clk)
     );
 
     initial begin
-        $dumpfile("andi_wave.vcd");
+        $dumpfile("xori_wave.vcd");
         $dumpvars;
         clk = 0;
         forever #1 clk = ~clk;
     end
 
-    task test_andi();
+    task test_xori();
     begin
-        $write("  test_andi: ");
+        $write("  test_xori: ");
 
         #10; // wait for andi to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h00000000)
+        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h00000001)
             $display(" passed!");
         else
-            $error("    x5 should be 32'h00000000, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h00000001, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
 
         #8;
     end
     endtask
 
      initial begin
-        $display("andi_tb: starting tests");
+        $display("xori_tb: starting tests");
 
         reset_n = 1;
         #1;
@@ -37,7 +37,7 @@ module andi_tb();
         #1;
         reset_n = 1;
 
-        test_andi();
+        test_xori();
 
         $dumpoff;
         $finish;
