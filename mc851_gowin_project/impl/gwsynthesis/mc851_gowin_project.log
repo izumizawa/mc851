@@ -1,0 +1,53 @@
+GowinSynthesis start
+Running parser ...
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v'
+Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":1)
+Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":1)
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v'
+Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":1)
+Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":1)
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v'
+Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":1)
+Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":1)
+WARN  (EX3012) : Empty statement in sequential block("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":243)
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v'
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\register_file.v'
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v'
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v'
+Compiling module 'soc'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":1)
+Compiling module 'cpu'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":3)
+Compiling module 'register_file'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\register_file.v":1)
+Compiling module 'alu_module'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":3)
+Compiling module 'mmu'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":3)
+Compiling module 'rom(ADDR_WIDTH=8)'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":2)
+Extracting RAM for identifier 'mem'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":12)
+Compiling module 'ram'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v":2)
+Extracting RAM for identifier 'mem'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v":13)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":91)
+WARN  (EX3791) : Expression size 4 truncated to fit in target size 3("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":100)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":104)
+WARN  (EX3791) : Expression size 3 truncated to fit in target size 2("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":112)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":117)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":124)
+NOTE  (EX0101) : Current top module is "soc"
+[5%] Running netlist conversion ...
+Running device independent optimization ...
+[10%] Optimizing Phase 0 completed
+[15%] Optimizing Phase 1 completed
+[25%] Optimizing Phase 2 completed
+Running inference ...
+[30%] Inferring Phase 0 completed
+[40%] Inferring Phase 1 completed
+[50%] Inferring Phase 2 completed
+[55%] Inferring Phase 3 completed
+Running technical mapping ...
+[60%] Tech-Mapping Phase 0 completed
+[65%] Tech-Mapping Phase 1 completed
+[75%] Tech-Mapping Phase 2 completed
+[80%] Tech-Mapping Phase 3 completed
+[90%] Tech-Mapping Phase 4 completed
+WARN  (NL0002) : The module "ram" instantiated to "ram_inst" is swept in optimizing("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":54)
+[95%] Generate netlist file "C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\gwsynthesis\mc851_gowin_project.vg" completed
+[100%] Generate report file "C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\gwsynthesis\mc851_gowin_project_syn.rpt.html" completed
+GowinSynthesis finish
