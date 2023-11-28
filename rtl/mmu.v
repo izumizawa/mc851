@@ -3,7 +3,7 @@
 module mmu #(
     parameter ROMFILE="../src/memdump/addi.mem"
 ) (
-    input clk, reset_n,
+    input clk, reset_n, btn1, btn2,
     input write_enable,
     input read_enable,
     input mem_signed_read,
@@ -54,6 +54,24 @@ module mmu #(
     );
     // -------------------------------------------------------------------------
 
+    /***************************************************************************
+     * BTN (Peripheral)
+     */
+    localparam BTN_ADDR_WIDTH = 8;
+    reg btn_read_enable;
+    wire  [BTN_ADDR_WIDTH-1:0] btn_address;
+    wire [31:0] btn_data_out;
+
+    btn #( .ADDR_WIDTH(BTN_ADDR_WIDTH) ) btn_inst (
+        .clk            (clk                ),
+        .btn1           (btn1               ),
+        .btn2           (btn2               ),
+        .read_enable    (btn_read_enable    ),
+        .address        (btn_address        ),
+        .data_out       (btn_data_out       )
+    );
+    // -------------------------------------------------------------------------
+
     reg [31:0] data_out_aux;    // Saída de uma única leitura, selecionada dentre os dispositivos
     reg [31:0] data_in_aux;     // Entrada de uma única escrita, distribuída para os dispositivos
     reg [31:0] address_aux;     // Endereço de um único acesso de memória
@@ -70,6 +88,7 @@ module mmu #(
     assign ram_data_in = data_in_aux;
     assign rom_address = address_aux[ROM_ADDR_WIDTH+1:2];
     assign ram_address = address_aux[RAM_ADDR_WIDTH+1:2];
+    assign btn_address = address_aux[BTN_ADDR_WIDTH+1:2];
 
     assign mem_read_data_1 = data_out_aux;
     assign byte_offset = address[1:0];
@@ -78,7 +97,7 @@ module mmu #(
     /* Mapeamento do espaço de endereçamento
      * ROM: 0x00000000 .. 0x00FFFFFF
      * RAM: 0x01000000 .. 0x01FFFFFF
-     * ... RESERVADO: 0x01000000 .. 0xFFFFFFFF
+     * BTN: 0x02000000 .. 0x02FFFFFF
      *
      * Terminologia:
      * RANGE: Número de bits de endereçamento disponíveis pro dispositivo.
@@ -88,6 +107,8 @@ module mmu #(
     localparam ROM_RANGE    = 24;
     localparam RAM_SELECT   = 8'h01;
     localparam RAM_RANGE    = 24;
+    localparam BTN_SELECT   = 8'h02;
+    localparam BTN_RANGE    = 24;
 
     // Selecionar dispositivo de escrita/leitura com base no endereço
     always @(*) begin
@@ -103,6 +124,9 @@ module mmu #(
             ram_write_enable = write_enable_aux;
             ram_read_enable = read_enable_aux;
             data_out_aux = ram_data_out;
+        end else if (address[31:BTN_RANGE] == BTN_SELECT) begin
+            btn_read_enable = read_enable_aux;
+            data_out_aux = btn_data_out;
         end
     end
 
@@ -137,17 +161,16 @@ module mmu #(
 
         // TODO: Corrigir para utilizar a placa
         // Fazer extensão de sinal do valor lido
-        // if (mem_signed_read) begin
-        //     case (mem_data_width)
-        //         0: data_out = { {24{mem_read_unsigned[ 7]}}, mem_read_unsigned[ 7:0] };
-        //         1: data_out = { {16{mem_read_unsigned[15]}}, mem_read_unsigned[15:0] };
-        //         2: data_out = { { 8{mem_read_unsigned[23]}}, mem_read_unsigned[23:0] };
-        //         3: data_out = mem_read_unsigned;
-        //     endcase
-        // end else begin
-        //     data_out = mem_read_unsigned;
-        // end
-        data_out = rom_data_out;
+        if (mem_signed_read) begin
+            case (mem_data_width)
+                0: data_out = { {24{mem_read_unsigned[ 7]}}, mem_read_unsigned[ 7:0] };
+                1: data_out = { {16{mem_read_unsigned[15]}}, mem_read_unsigned[15:0] };
+                2: data_out = { { 8{mem_read_unsigned[23]}}, mem_read_unsigned[23:0] };
+                3: data_out = mem_read_unsigned;
+            endcase
+        end else begin
+            data_out = mem_read_unsigned;
+        end
     end
 
     always @(*) begin
