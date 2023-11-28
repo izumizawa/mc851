@@ -1,7 +1,7 @@
 const {SerialPort} = require('serialport');
 
 const tangnano = new SerialPort({
-    path: '/dev/tty.usbserial-14401',
+    path: '/dev/ttyUSB0',
     baudRate: 115200,
 });
 

@@ -1,9 +1,9 @@
 module jalr_tb();
     reg clk;
-    reg reset_n;
+    reg btn2;
 
     soc #( .ROMFILE("../../src/memdump/jalr.mem")) soc_inst(
-        .reset_n(reset_n),
+        .btn2(btn2),
         .clk(clk)
     );
 
@@ -35,11 +35,11 @@ module jalr_tb();
      initial begin
         $display("jalr_tb: starting tests");
 
-        reset_n = 1;
+        btn2 = 1;
         #1;
-        reset_n = 0;
+        btn2 = 0;
         #1;
-        reset_n = 1;
+        btn2 = 1;
 
         test_jalr();
 
