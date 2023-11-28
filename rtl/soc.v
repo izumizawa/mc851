@@ -5,6 +5,7 @@ module soc #(
     input clk,
     input btn1,
     input btn2,
+    output [5:0] led,
     output uart_tx
 );
     wire         mmu_mem_ready;
@@ -43,10 +44,11 @@ module soc #(
         .address(mmu_address),
         .data_in(mmu_data_in),
         .data_out(mmu_data_out),
+        .led(led),
         .mem_ready(mmu_mem_ready)
     );
 
-// TEST
+// UART TEST
 reg [3:0] txState = 0;
 reg [24:0] txCounter = 0;
 reg [7:0] dataOut = 0;
@@ -90,8 +92,9 @@ always @(posedge clk) begin
                 dataOut <= dataArray[txByteCounter];
                 txBitNumber <= 0;
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_WRITE: begin
             txPinRegister <= dataOut[txBitNumber];
@@ -103,8 +106,9 @@ always @(posedge clk) begin
                     txBitNumber <= txBitNumber + 1;
                 end
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_STOP_BIT: begin
             txPinRegister <= 1;
@@ -116,15 +120,17 @@ always @(posedge clk) begin
                     txState <= TX_STATE_START_BIT;
                 end
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_DEBOUNCE: begin
             if (txCounter == 25'b11111111111111111111) begin
                 if (btn1 == 1)
                     txState <= TX_STATE_IDLE;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
     endcase
 end

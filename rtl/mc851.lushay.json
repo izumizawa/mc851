@@ -6,6 +6,7 @@
         "cpu.v",
         "components/alu_module.v",
         "components/btn.v",
+        "components/led.v",
         "components/register_file.v",
         "components/rom.v",
         "components/ram.v"
