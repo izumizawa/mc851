@@ -27,12 +27,14 @@
 `define ALU_SLT     4'b1000
 `define ALU_SLTU    4'b1001
 // -------------------------- BRANCH
-`define BRANCH_BEQ      3'b000
-`define BRANCH_BNE      3'b001
-`define NOT_BRANCH      3'b010
-`define BRANCH_BLT      3'b100
-`define BRANCH_BGE      3'b101
-`define BRANCH_BLTU     3'b110
-`define BRANCH_BGEU     3'b111
+`define BRANCH_BEQ      4'b0000
+`define BRANCH_BNE      4'b0001
+`define NOT_BRANCH      4'b0010
+`define BRANCH_BLT      4'b0100
+`define BRANCH_BGE      4'b0101
+`define BRANCH_BLTU     4'b0110
+`define BRANCH_BGEU     4'b0111
+`define BRANCH_JAL      4'b1000
+`define BRANCH_JALR     4'b1001
 
 `endif

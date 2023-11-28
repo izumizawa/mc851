@@ -21,7 +21,7 @@ module cpu (
     // ID/EX Register
     reg [31:0] idex_pc;
     reg idex_reset;
-    reg [2:0] idex_branch_op;
+    reg [3:0] idex_branch_op;
     reg idex_reg_write;
     reg idex_mem_read;
     reg idex_mem_write;
@@ -37,7 +37,7 @@ module cpu (
 
     // EX/MEM Register
     reg exmem_reset;
-    reg [2:0] exmem_branch_op;
+    reg [3:0] exmem_branch_op;
     reg exmem_mem_to_reg;
     reg exmem_reg_write;
     reg exmem_mem_read;
@@ -102,7 +102,44 @@ module cpu (
                     branch_taken = 1;
                 end
             end
-            //TODO: BGE, BGEU, BLT, BLTU, BNE, ...
+            `BRANCH_BGE: begin
+                if (exmem_alu_out == 1'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BGEU: begin
+                if (exmem_alu_out == 1'b0) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BLT: begin
+                if (exmem_alu_out == 1'b1) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_BLTU: begin
+                if (exmem_alu_out == 1'b1) begin
+                    idex_reset = 1;
+                    exmem_reset = 1;
+                    branch_taken = 1;
+                end
+            end
+            `BRANCH_JAL: begin
+                idex_reset = 1;
+                exmem_reset = 1;
+                branch_taken = 1;
+            end
+            `BRANCH_JALR: begin
+                idex_reset = 1;
+                exmem_reset = 1;
+                branch_taken = 1;
+            end
             default: begin
                 idex_reset = 0;
                 exmem_reset = 0;
@@ -137,6 +174,7 @@ module cpu (
     wire [31:0] id_i_imm;
     wire [12:0] id_b_imm;
     wire [31:0] id_s_imm;
+    wire [31:0] id_j_imm;
     wire [31:0] id_shamt;
     wire [ 4:0] id_rs1;
 	wire [ 4:0] id_rs2;
@@ -172,6 +210,7 @@ module cpu (
     // B-type b_imm
     assign id_b_imm = { ifid_ir[31], ifid_ir[7], ifid_ir[30:25], ifid_ir[11:8], 1'b0 };
     assign id_s_imm = { { 20 {ifid_ir[31] } }, ifid_ir[31:25], ifid_ir[11:7] };
+    assign id_j_imm = { { 11 {ifid_ir[31] } }, ifid_ir[31], ifid_ir[19:12], ifid_ir[20], ifid_ir[30:21], 1'b0 };
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
@@ -294,25 +333,45 @@ module cpu (
             // B-type instructions
             7'b1100011: begin
                 idex_imm <= { { 20 { id_b_imm[12] } }, id_b_imm[11:0] };
-
                 idex_alu_src <= `ALU_SRC_FROM_REG;
 
                 if (id_funct3 == `BRANCH_BEQ) begin // BEQ
                     idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BEQ;
-
-                end else if (id_funct3 == 3'b101) begin //BGE
-                // TODO: BGE
-                end else if (id_funct3 == 3'b111) begin //BGEU
-                // TODO: BGEU
-                end else if (id_funct3 == 3'b100) begin //BLT
-                // TODO: BLT
-                end else if (id_funct3 == 3'b110) begin //BLTU
-                // TODO: BLTU
-                end else if (id_funct3 == 3'b001) begin //BNE
+                end else if (id_funct3 == `BRANCH_BGE) begin //BGE
+                    idex_alu_op <= `ALU_SLT;
+                    idex_branch_op <= `BRANCH_BGE;
+                end else if (id_funct3 == `BRANCH_BGEU) begin //BGEU
+                    idex_alu_op <= `ALU_SLTU;
+                    idex_branch_op <= `BRANCH_BGEU;
+                end else if (id_funct3 == `BRANCH_BLT) begin //BLT
+                    idex_alu_op <= `ALU_SLT;
+                    idex_branch_op <= `BRANCH_BLT;
+                end else if (id_funct3 == `BRANCH_BLTU) begin //BLTU
+                    idex_alu_op <= `ALU_SLTU;
+                    idex_branch_op <= `BRANCH_BLTU;
+                end else if (id_funct3 == `BRANCH_BNE) begin //BNE
                     idex_alu_op <= `ALU_SUB;
                     idex_branch_op <= `BRANCH_BNE;
                 end
+            end
+
+            // JAL instruction
+            7'b1101111: begin
+                idex_reg_write <= 1;
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_j_imm;
+                idex_branch_op <= `BRANCH_JAL;
+            end
+
+            // JALR instruction
+            7'b1100111: begin
+                idex_reg_write <= 1;
+                idex_alu_src <= `ALU_SRC_FROM_REG;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_i_imm;
+                idex_branch_op <= `BRANCH_JALR;
             end
         endcase
     end
@@ -323,6 +382,7 @@ module cpu (
     /***************************************************************************
      * Execute (EX) stage
      **************************************************************************/
+    reg [31:0] ex_jalr_offset;
     reg [31:0] alu_input_a;
     reg [31:0] alu_input_b;
     wire [31:0] alu_out;
@@ -338,11 +398,24 @@ module cpu (
     // Forwarding Unit.
     always @(*) begin
         if (exmem_rd != 0 && exmem_reg_write && exmem_rd == idex_rs1) begin
-            alu_input_a = exmem_alu_out;
+            if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
+                alu_input_a = idex_pc;
+                ex_jalr_offset = exmem_alu_out + idex_imm;
+            end else begin
+                alu_input_a = exmem_alu_out;
+                ex_jalr_offset = 0;
+            end
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs1) begin
-            alu_input_a = wb_data;
+            if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
+                alu_input_a = idex_pc;
+                ex_jalr_offset = wb_data + idex_imm;
+            end else begin
+                alu_input_a = wb_data;
+                ex_jalr_offset = 0;
+            end
         end else begin
             alu_input_a = idex_data_read_1;
+            ex_jalr_offset = 0;
         end
 
         if (idex_alu_src == `ALU_SRC_FROM_IMM) begin
@@ -351,6 +424,8 @@ module cpu (
             alu_input_b = exmem_alu_out;
         end else if (memwb_rd != 0 && memwb_reg_write && memwb_rd == idex_rs2) begin
             alu_input_b = wb_data;
+        end else if (idex_branch_op == `BRANCH_JAL || idex_branch_op == `BRANCH_JALR) begin
+            alu_input_b = 4;
         end else begin
             alu_input_b = idex_data_read_2;
         end
@@ -381,8 +456,12 @@ module cpu (
             exmem_alu_out <= 0;
             exmem_branch_target <= 0;
         end else begin
+            if (idex_branch_op == `BRANCH_JALR) begin
+                exmem_branch_target <= ex_jalr_offset;
+            end else begin
+                exmem_branch_target <= idex_pc + idex_imm;
+            end
             exmem_branch_op <= idex_branch_op;
-            exmem_branch_target <= idex_pc + idex_imm;
             exmem_mem_read <= idex_mem_read;
             exmem_mem_to_reg <= idex_mem_to_reg;
             exmem_mem_write <= idex_mem_write;

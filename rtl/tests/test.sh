@@ -57,6 +57,34 @@ iverilog -I ../ -o instructions/beq.vvp instructions/beq_tb.v ../soc.v ../cpu.v 
 vvp ./instructions/beq.vvp
 echo ""
 
+iverilog -I ../ -o instructions/bge.vvp instructions/bge_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/bge.vvp
+echo ""
+
+iverilog -I ../ -o instructions/bgeu.vvp instructions/bgeu_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/bgeu.vvp
+echo ""
+
+iverilog -I ../ -o instructions/blt.vvp instructions/blt_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/blt.vvp
+echo ""
+
+iverilog -I ../ -o instructions/bltu.vvp instructions/bltu_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/bltu.vvp
+echo ""
+
+iverilog -I ../ -o instructions/bne.vvp instructions/bne_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/bne.vvp
+echo ""
+
+iverilog -I ../ -o instructions/jal.vvp instructions/jal_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/jal.vvp
+echo ""
+
+iverilog -I ../ -o instructions/jalr.vvp instructions/jalr_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/jalr.vvp
+echo ""
+
 iverilog -I ../ -o instructions/or.vvp instructions/or_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../mmu.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
 vvp ./instructions/or.vvp
 echo ""
