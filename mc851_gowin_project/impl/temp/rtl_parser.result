@@ -1,0 +1,64 @@
+[
+ {
+  "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+  "InstLine" : 1,
+  "InstName" : "soc",
+  "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+  "ModuleLine" : 1,
+  "ModuleName" : "soc",
+  "SubInsts" : [
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+    "InstLine" : 20,
+    "InstName" : "cpu_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
+    "ModuleLine" : 3,
+    "ModuleName" : "cpu",
+    "SubInsts" : [
+     {
+      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
+      "InstLine" : 150,
+      "InstName" : "regfile",
+      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/register_file.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "register_file"
+     },
+     {
+      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
+      "InstLine" : 331,
+      "InstName" : "alu_inst",
+      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/alu_module.v",
+      "ModuleLine" : 3,
+      "ModuleName" : "alu_module"
+     }
+    ]
+   },
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+    "InstLine" : 34,
+    "InstName" : "mmu_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+    "ModuleLine" : 3,
+    "ModuleName" : "mmu",
+    "SubInsts" : [
+     {
+      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+      "InstLine" : 28,
+      "InstName" : "rom_inst",
+      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/rom.v",
+      "ModuleLine" : 2,
+      "ModuleName" : "rom"
+     },
+     {
+      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+      "InstLine" : 47,
+      "InstName" : "ram_inst",
+      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/ram.v",
+      "ModuleLine" : 2,
+      "ModuleName" : "ram"
+     }
+    ]
+   }
+  ]
+ }
+]

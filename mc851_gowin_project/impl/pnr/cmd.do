@@ -1,0 +1,12 @@
+-d C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\gwsynthesis\mc851_gowin_project.vg
+-p GW1NR-9C-QFN88P-6
+-pn GW1NR-LV9QN88PC6/I5
+-cst C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mc851_gowin_project.cst
+-cfg C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\pnr\device.cfg
+-bit
+-tr
+-ph
+-timing
+-cst_error
+-correct_hold 1
+-route_maxfan 23

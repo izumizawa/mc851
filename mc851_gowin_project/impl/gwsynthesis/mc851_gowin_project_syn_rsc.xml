@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Module name="soc" Register="74" Lut="117">
+ <SubModule name="cpu_inst" Register="306" Alu="51" Lut="980">
+  <SubModule name="regfile" Register="32" Alu="8" Lut="5" Ssram="32"/>
+  <SubModule name="alu_inst" Alu="32" Lut="119"/>
+ </SubModule>
+ <SubModule name="mmu_inst" Register="25" Lut="64">
+  <SubModule name="rom_inst" Lut="3" Bsram="1"/>
+ </SubModule>
+</Module>

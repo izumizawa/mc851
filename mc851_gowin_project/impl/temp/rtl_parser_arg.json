@@ -1,0 +1,45 @@
+{
+ "Device" : "GW1NR-9C",
+ "Files" : [
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/alu_module.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/define.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/ram.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/register_file.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/rom.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+   "Type" : "verilog"
+  }
+ ],
+ "IncludePath" : [
+
+ ],
+ "LoopLimit" : 2000,
+ "ResultFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/impl/temp/rtl_parser.result",
+ "Top" : "soc",
+ "VerilogStd" : "verilog_2001",
+ "VhdlStd" : "vhdl_93"
+}
