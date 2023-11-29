@@ -7,8 +7,8 @@ module l1_data_cache #(
     input  wire         read_enable,
     input  wire [31:0]  address,
     input  wire [31:0]  data_in,
-    output wire [31:0]  data_out
-    output wire         cache_miss,
+    output wire [31:0]  data_out,
+    output wire         cache_miss
 );
     localparam OFFSET_WIDTH     = 2; // BLOCK_SIZE = 2**OFFSET_WIDTH = 4 bytes
     localparam TAG_WIDTH        = 32 - (INDEX_WIDTH + OFFSET_WIDTH);

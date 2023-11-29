@@ -15,7 +15,6 @@ module soc #(
     wire [31:0] immu_data_out;
     wire        immu_write_enable;
     wire        immu_read_enable;
-    wire        immu_signed_read;
     wire [ 1:0] immu_data_width;
     wire [31:0] immu_address;
     wire [31:0] immu_data_in;
@@ -40,7 +39,6 @@ module soc #(
     wire [31:0] dmmu_data_out;
     wire        dmmu_write_enable;
     wire        dmmu_read_enable;
-    wire        dmmu_signed_read;
     wire [ 1:0] dmmu_data_width;
     wire [31:0] dmmu_address;
     wire [31:0] dmmu_data_in;
@@ -68,7 +66,6 @@ module soc #(
         .immu_data_out(immu_data_out),
         .immu_write_enable(immu_write_enable),
         .immu_read_enable(immu_read_enable),
-        .immu_signed_read(immu_signed_read),
         .immu_data_width(immu_data_width),
         .immu_address(immu_address),
         .immu_data_in(immu_data_in),
@@ -77,7 +74,6 @@ module soc #(
         .dmmu_data_out(dmmu_data_out),
         .dmmu_write_enable(dmmu_write_enable),
         .dmmu_read_enable(dmmu_read_enable),
-        .dmmu_signed_read(dmmu_signed_read),
         .dmmu_data_width(dmmu_data_width),
         .dmmu_address(dmmu_address),
         .dmmu_data_in(dmmu_data_in)
@@ -88,7 +84,6 @@ module soc #(
         .reset_n(reset_n),
         .write_enable(immu_write_enable),
         .read_enable(immu_read_enable),
-        .signed_read(immu_signed_read),
         .data_width(immu_data_width),
         .address(immu_address),
         .data_in(immu_data_in),
@@ -108,7 +103,6 @@ module soc #(
         .reset_n(reset_n),
         .write_enable(dmmu_write_enable),
         .read_enable(dmmu_read_enable),
-        .signed_read(dmmu_signed_read),
         .data_width(dmmu_data_width),
         .address(dmmu_address),
         .data_in(dmmu_data_in),

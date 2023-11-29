@@ -8,16 +8,14 @@ module cpu (
     input  wire [31:0]  immu_data_out,
     output wire         immu_write_enable,
     output wire         immu_read_enable,
-    output wire         immu_signed_read,
     output wire [ 1:0]  immu_data_width,
     output wire [31:0]  immu_address,
     output wire [31:0]  immu_data_in,
 
     input  wire         dmmu_mem_ready,
-    input  wire  [31:0] dmmu_data_out,
+    input  wire [31:0]  dmmu_data_out,
     output wire         dmmu_write_enable,
     output wire         dmmu_read_enable,
-    output wire         dmmu_signed_read,
     output wire [ 1:0]  dmmu_data_width,
     output wire [31:0]  dmmu_address,
     output wire [31:0]  dmmu_data_in
@@ -40,7 +38,7 @@ module cpu (
     reg         idex_reg_write;
     reg         idex_mem_read;
     reg         idex_mem_write;
-    reg         idex_dmmu_signed_read; // TODO: Decodificar esse sinal p/ instruções de load/store
+    reg         idex_mem_signed_read; // TODO: Decodificar esse sinal p/ instruções de load/store
     reg [ 1:0]  idex_mem_data_width;
     reg         idex_mem_to_reg;
     reg         idex_alu_src;
@@ -59,8 +57,8 @@ module cpu (
     reg         exmem_reg_write;
     reg         exmem_mem_read;
     reg         exmem_mem_write;
-    reg         exmem_dmmu_signed_read;
-    reg [ 1:0]  exmem_dmmu_data_width;
+    reg         exmem_mem_signed_read;
+    reg [ 1:0]  exmem_mem_data_width;
     reg [31:0]  exmem_branch_target;
     reg         exmem_branch_taken;
     reg [31:0]  exmem_alu_out;
@@ -82,10 +80,11 @@ module cpu (
     /***************************************************************************
      * Controle de Pipeline / Detecção de Hazards de Controle
      **************************************************************************/
+    // TODO: Parar idex e limpar exmem caso seja detectado hazard "Use after load"
     // Flush Register
     assign flush_ifid   = (stall_pc && !stall_idex) || exmem_branch_taken;
     assign flush_idex   = exmem_branch_taken;
-    assign flush_exmem  = exmem_branch_taken;
+    assign flush_exmem  = 0;
     assign flush_memwb  = stall_exmem;
 
     // Stall Pipeline Stage
@@ -101,7 +100,6 @@ module cpu (
      **************************************************************************/
     assign immu_write_enable = 0;
     assign immu_read_enable = 1;
-    assign immu_signed_read = 0;
     assign immu_data_width = `MMU_WIDTH_WORD;
     assign immu_address = pc;
     assign immu_data_in = 0;
@@ -382,8 +380,8 @@ module cpu (
             exmem_reg_write <= 0;
             exmem_mem_read <= 0;
             exmem_mem_write <= 0;
-            exmem_dmmu_signed_read <= 0;
-            exmem_dmmu_data_width <= 0;
+            exmem_mem_signed_read <= 0;
+            exmem_mem_data_width <= 0;
             exmem_data_read_2 <= 32'b0;
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
@@ -395,8 +393,8 @@ module cpu (
                 exmem_reg_write <= 0;
                 exmem_mem_read <= 0;
                 exmem_mem_write <= 0;
-                exmem_dmmu_signed_read <= 0;
-                exmem_dmmu_data_width <= 0;
+                exmem_mem_signed_read <= 0;
+                exmem_mem_data_width <= 0;
                 exmem_data_read_2 <= 32'b0;
                 exmem_rd <= 5'b0;
                 exmem_alu_out <= 0;
@@ -407,8 +405,8 @@ module cpu (
                 exmem_reg_write <= idex_reg_write;
                 exmem_mem_read <= idex_mem_read;
                 exmem_mem_write <= idex_mem_write;
-                exmem_dmmu_signed_read <= idex_dmmu_signed_read;
-                exmem_dmmu_data_width <= idex_mem_data_width;
+                exmem_mem_signed_read <= idex_mem_signed_read;
+                exmem_mem_data_width <= idex_mem_data_width;
                 exmem_rd <= idex_rd;
                 exmem_alu_out <= alu_out;
                 exmem_branch_target <= idex_pc + idex_imm;
@@ -444,10 +442,24 @@ module cpu (
      **************************************************************************/
     assign dmmu_write_enable = exmem_mem_write;
     assign dmmu_read_enable = exmem_mem_read;
-    assign dmmu_signed_read = exmem_dmmu_signed_read;
-    assign dmmu_data_width = exmem_dmmu_data_width;
+    assign dmmu_data_width = exmem_mem_data_width;
     assign dmmu_address = exmem_alu_out;
     assign dmmu_data_in = exmem_data_read_2;
+
+    reg [31:0] mem_data_read;
+
+    always @(*) begin
+        if (exmem_mem_signed_read) begin
+            case (exmem_mem_data_width)
+                0: mem_data_read = { {24{dmmu_data_out[ 7]}}, dmmu_data_out[ 7:0] };
+                1: mem_data_read = { {16{dmmu_data_out[15]}}, dmmu_data_out[15:0] };
+                2: mem_data_read = { { 8{dmmu_data_out[23]}}, dmmu_data_out[23:0] };
+                3: mem_data_read = dmmu_data_out;
+            endcase
+        end else begin
+            mem_data_read = dmmu_data_out;
+        end
+    end
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
@@ -460,7 +472,7 @@ module cpu (
         end else if (flush_memwb) begin
             memwb_reg_write <= 0;
         end else begin
-            memwb_mem_data_read <= dmmu_data_out;
+            memwb_mem_data_read <= mem_data_read;
             memwb_alu_out <= exmem_alu_out;
             memwb_rd <= exmem_rd;
             memwb_reg_write <= exmem_reg_write;

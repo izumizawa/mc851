@@ -11,7 +11,7 @@ module mmu #(
     input  wire [ 1:0]  data_width,
     input  wire [31:0]  address,
     input  wire [31:0]  data_in,
-    output wire         mem_ready,
+    output reg          mem_ready,
     output wire [31:0]  data_out,
 
     // Interface do Controlador de Memória
@@ -39,56 +39,37 @@ module mmu #(
     reg  [31:0] mem_write_data;
     wire [31:0] mem_low_word;
     reg  [31:0] mem_high_word;      // Primeiro valor lido da memória caso seja feito acesso desalinhado
-    reg  [31:0] data_out_unsigned;
+    wire [31:0] data_out_unmasked;
+    reg  [31:0] data_out_masked;
     wire        aligned_access;
 
     assign mem_low_word     = data_out_aux;
     assign byte_offset      = address[1:0];
     assign aligned_access   = (byte_offset + data_width < 4) ? 1 : 0;
 
+    // Recuperar dado da memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
+    assign data_out_unmasked = (mem_low_word >> 8*byte_offset) | (mem_high_word << 8*(4-{2'b0, byte_offset}));
+    assign data_out = data_out_masked;
+
     always @(*) begin
-        // Recuperar dado da memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
-        case (byte_offset)
+        case (data_width)
             0: begin
-                data_out_unsigned[ 7: 0] = mem_low_word[7:0];
-                data_out_unsigned[15: 8] = (data_width >= 1) ? mem_low_word[15: 8] : 8'b0;
-                data_out_unsigned[23:16] = (data_width >= 2) ? mem_low_word[23:16] : 8'b0;
-                data_out_unsigned[31:24] = (data_width == 3) ? mem_low_word[31:24] : 8'b0;
+                data_out_masked = data_out_unmasked & { {24{1'b0}}, {8{1'b1}} };
             end
             1: begin
-                data_out_unsigned[ 7: 0] = mem_low_word[15:8];
-                data_out_unsigned[15: 8] = (data_width >= 1) ? mem_low_word[23:16] : 8'b0;
-                data_out_unsigned[23:16] = (data_width >= 2) ? mem_low_word[31:24] : 8'b0;
-                data_out_unsigned[31:24] = (data_width == 3) ? mem_high_word[ 7: 0] : 8'b0;
+                data_out_masked = data_out_unmasked & { {16{1'b0}}, {16{1'b1}} };
             end
             2: begin
-                data_out_unsigned[ 7: 0] = mem_low_word[23:16];
-                data_out_unsigned[15: 8] = (data_width >= 1) ? mem_low_word[31:24] : 8'b0;
-                data_out_unsigned[23:16] = (data_width >= 2) ? mem_high_word[ 7: 0] : 8'b0;
-                data_out_unsigned[31:24] = (data_width == 3) ? mem_high_word[15: 8] : 8'b0;
+                data_out_masked = data_out_unmasked & { { 8{1'b0}}, {24{1'b1}} };
             end
             3: begin
-                data_out_unsigned[ 7: 0] = mem_low_word[31:24];
-                data_out_unsigned[15: 8] = (data_width >= 1) ? mem_high_word[ 7: 0] : 8'b0;
-                data_out_unsigned[23:16] = (data_width >= 2) ? mem_high_word[15: 8] : 8'b0;
-                data_out_unsigned[31:24] = (data_width == 3) ? mem_high_word[23:16] : 8'b0;
+                data_out_masked = data_out_unmasked;
             end
         endcase
-
-        if (signed_read) begin
-            case (data_width)
-                0: data_out = { {24{data_out_unsigned[ 7]}}, data_out_unsigned[ 7:0] };
-                1: data_out = { {16{data_out_unsigned[15]}}, data_out_unsigned[15:0] };
-                2: data_out = { { 8{data_out_unsigned[23]}}, data_out_unsigned[23:0] };
-                3: data_out = data_out_unsigned;
-            endcase
-        end else begin
-            data_out = data_out_unsigned;
-        end
     end
 
+    // Palavra a ser escrita na memória de maneira a preservar os bytes não modificados, se for escrita de byte/half.
     always @(*) begin
-        // Palavra a ser escrita na memória de maneira a preservar os bytes não modificados, se for escrita de byte/half.
         case (byte_offset)
             0: begin
                 mem_write_data[ 7: 0] = data_in[7:0];
