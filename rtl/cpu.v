@@ -34,6 +34,9 @@ module cpu (
 	reg [ 4:0] idex_rs2;
 	reg [ 4:0] idex_rd;
 	reg [31:0] idex_imm;
+    reg        idex_mem_signed_read;
+    reg [ 1:0] idex_mem_data_width;
+    reg [31:0] idex_mem_data_in;
 
     // EX/MEM Register
     reg exmem_reset;
@@ -48,6 +51,9 @@ module cpu (
     reg [31:0] exmem_alu_out;
     reg [31:0] exmem_data_read_2;
     reg [ 4:0] exmem_rd;
+    reg        exmem_mem_signed_read;
+    reg [ 1:0] exmem_mem_data_width;
+    reg [31:0] exmem_mem_data_in;
 
     // MEM/WB Register
     reg [31:0] memwb_mem_data_read;
@@ -67,15 +73,8 @@ module cpu (
     reg branch_taken;
 
     // TODO: Memory Access Control e Hazard Unit
-
-    assign mmu_write_enable = 0;
-    assign mmu_read_enable = 1;
-    assign mmu_mem_signed_read = 0;
-    assign mmu_mem_data_width = `MMU_WIDTH_WORD;
-
-    assign mmu_address = pc;
-    assign mmu_data_in = 0; // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
-    assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
+     // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
+    // TODO: Usar saída da cache L1i quando ela for implementada.
 
     always @(*) begin
         idex_reset = 0;
@@ -115,12 +114,30 @@ module cpu (
         if(!reset_n) begin
             pc <= 0;
             ifid_pc <= 32'b0;
+            ifid_ir <= `RISCV_NOP;
+            mmu_write_enable <= 0;
+            mmu_read_enable <= 1;
+            mmu_mem_signed_read <= 0;
+            mmu_mem_data_width <= `MMU_WIDTH_WORD;
+            mmu_address <= pc;
+            mmu_data_in <= 0;
         end else begin
             ifid_pc <= pc;
+            ifid_ir <= mmu_data_out;
+            mmu_write_enable <= 0;
+            mmu_read_enable <= 1;
+            mmu_mem_signed_read <= 0;
+            mmu_mem_data_width <= `MMU_WIDTH_WORD;
+            mmu_address <= pc;
+            mmu_data_in <= 0;
 
             if (branch_taken) begin
                 pc <= exmem_branch_target;
+            end else if (!mmu_mem_ready) begin
+                ifid_ir <= `RISCV_NOP;
             end else begin
+                ifid_ir <= mmu_data_out;
+                mmu_read_enable <= 0;
                 pc <= pc + 4;
             end
         end
@@ -217,6 +234,9 @@ module cpu (
         idex_reg_write <= 0;
         idex_mem_read <= 0;
         idex_mem_write <= 0;
+        idex_mem_signed_read <= 0;
+        idex_mem_data_width <= `MMU_WIDTH_WORD;
+        idex_mem_data_in <= 0;
         idex_branch_op <= `NOT_BRANCH;
         idex_data_read_1 <= read_data_1;
         idex_data_read_2 <= read_data_2;
@@ -283,12 +303,48 @@ module cpu (
                 end
             end
 
+            // Load instructions
+            7'b0000011: begin
+                idex_mem_to_reg <= 1;
+                idex_reg_write <= 1;
+                idex_mem_read <= 1;
+                idex_alu_src <= `ALU_SRC_FROM_IMM;
+                idex_alu_op <= `ALU_ADD;
+                idex_imm <= id_i_imm;
+
+                if (id_funct3 == `LOAD_BYTE) begin
+                    idex_mem_signed_read <= 1;
+                    idex_mem_data_width <= `MMU_WIDTH_BYTE;
+                end else if (id_funct3 == `LOAD_HALF) begin // LH
+                    idex_mem_signed_read <= 1;
+                    idex_mem_data_width <= `MMU_WIDTH_HALF;
+                end else if (id_funct3 == `LOAD_WORD) begin // LW
+                    idex_mem_signed_read <= 1;
+                    idex_mem_data_width <= `MMU_WIDTH_WORD;
+                end else if (id_funct3 == `LOAD_BYTE_U) begin // LBU
+                    idex_mem_signed_read <= 0;
+                    idex_mem_data_width <= `MMU_WIDTH_BYTE;
+                end else if (id_funct3 == `LOAD_HALF_U) begin // LHU
+                    idex_mem_signed_read <= 0;
+                    idex_mem_data_width <= `MMU_WIDTH_HALF;
+                end
+            end
+
             // S-type instructions
             7'b0100011: begin
                 idex_mem_write <= 1; // True
                 idex_alu_src <= `ALU_SRC_FROM_IMM;
                 idex_alu_op <= `ALU_ADD;
                 idex_imm <= id_s_imm;
+                idex_mem_data_in <= id_rs2;
+
+                if (id_funct3 == `STORE_BYTE) begin // SB
+                    idex_mem_data_width <= `MMU_WIDTH_BYTE;
+                end else if (id_funct3 == `STORE_HALF) begin // SH
+                    idex_mem_data_width <= `MMU_WIDTH_HALF;
+                end else if (id_funct3 == `STORE_WORD) begin // SW
+                    idex_mem_data_width <= `MMU_WIDTH_WORD;
+                end
             end
 
             // B-type instructions
@@ -369,6 +425,9 @@ module cpu (
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
             exmem_branch_target <= 0;
+            exmem_mem_signed_read <= 0;
+            exmem_mem_data_width <= `MMU_WIDTH_WORD;
+            exmem_mem_data_in <= 0;
         end else if (exmem_reset) begin
             exmem_branch_op <= `NOT_BRANCH;
             exmem_mem_to_reg <= 0;
@@ -380,6 +439,9 @@ module cpu (
             exmem_rd <= 5'b0;
             exmem_alu_out <= 0;
             exmem_branch_target <= 0;
+            exmem_mem_signed_read <= 0;
+            exmem_mem_data_width <= `MMU_WIDTH_WORD;
+            exmem_mem_data_in <= 0;
         end else begin
             exmem_branch_op <= idex_branch_op;
             exmem_branch_target <= idex_pc + idex_imm;
@@ -388,6 +450,9 @@ module cpu (
             exmem_mem_write <= idex_mem_write;
             exmem_rd <= idex_rd;
             exmem_reg_write <= idex_reg_write;
+            exmem_mem_signed_read <= idex_mem_signed_read;
+            exmem_mem_data_width <= idex_mem_data_width;
+            exmem_mem_data_in <= idex_mem_data_in;
 
             exmem_alu_out <= alu_out;
         end
@@ -411,6 +476,14 @@ module cpu (
             memwb_rd <= exmem_rd;
             memwb_reg_write <= exmem_reg_write;
             memwb_mem_to_reg <= exmem_mem_to_reg;
+            memwb_mem_data_read <= mmu_data_out;    // Estará disponível no próximo clock?
+
+            mmu_read_enable <= exmem_mem_read;
+            mmu_write_enable <= exmem_mem_write;
+            mmu_address <= exmem_alu_out;
+            mmu_data_in <= exmem_mem_data_in;
+            mmu_mem_data_width <= exmem_mem_data_width;
+            mmu_mem_signed_read <= exmem_mem_signed_read;
         end
     end
     // -------------------------------------------------------------------------
