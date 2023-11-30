@@ -8,45 +8,43 @@ module soc #(
     output [5:0] led,
     output uart_tx
 );
-    wire         mmu_mem_ready;
-    wire [31:0]  mmu_data_out;
     wire         mmu_write_enable;
-    wire         mmu_read_enable;
     wire         mmu_mem_signed_read;
     wire         mmu_signed_read;
-    wire [ 1:0]  mmu_mem_data_width;
-    wire [31:0]  mmu_address;
     wire [31:0]  mmu_data_in;
 
-    cpu cpu_inst (
+    localparam ROM_ADDR_WIDTH = 8;
+    wire [ROM_ADDR_WIDTH-1:0]  rom_address;
+    wire         rom_read_enable;
+    wire [31:0]  rom_data_out;
+
+
+    cpu #(
+        .ROM_ADDR_WIDTH(ROM_ADDR_WIDTH)
+    ) cpu_inst (
         .clk (clk),
         .reset_n (btn2),
-        .mmu_mem_ready(mmu_mem_ready),
-        .mmu_data_out(mmu_data_out),
+        .rom_data_out(rom_data_out),
         .mmu_write_enable(mmu_write_enable),
-        .mmu_read_enable(mmu_read_enable),
+        .rom_read_enable(rom_read_enable),
         .mmu_mem_signed_read(mmu_signed_read),
-        .mmu_mem_data_width(mmu_mem_data_width),
-        .mmu_address(mmu_address),
+        .rom_address(rom_address),
         .mmu_data_in(mmu_data_in),
         .uart_data(data)
     );
 
-    mmu #( .ROMFILE(ROMFILE)) mmu_inst (
-        .clk(clk),
-        .btn1(btn1),
-        .btn2(btn2),
-        .reset_n(btn2),
-        .write_enable(mmu_write_enable),
-        .read_enable(mmu_read_enable),
-        .mem_signed_read(mmu_signed_read),
-        .mem_data_width(mmu_mem_data_width),
-        .address(mmu_address),
-        .data_in(mmu_data_in),
-        .data_out(mmu_data_out),
-        .led(led),
-        .mem_ready(mmu_mem_ready)
+
+    rom #(
+        .ADDR_WIDTH(ROM_ADDR_WIDTH),
+        .ROMFILE(ROMFILE)
+    ) rom_inst (
+        .clk            (clk            ),
+        .read_enable    (rom_read_enable),
+        .address        (rom_address    ),
+        .data_out       (rom_data_out   )
     );
+
+/* ------------ UART ------------- */
 
 // UART TEST
 reg [3:0] txState = 0;

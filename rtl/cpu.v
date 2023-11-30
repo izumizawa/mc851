@@ -1,15 +1,15 @@
 `include "define.v"
 
-module cpu (
+module cpu #(
+    parameter ROM_ADDR_WIDTH = 8  // 256×4B = 1 KiB
+) (
     input         clk,
     input         reset_n,
-    input         mmu_mem_ready,
-    input [31:0]  mmu_data_out,
+    input [31:0]  rom_data_out,
     output        mmu_write_enable,
-    output        mmu_read_enable,
+    output        rom_read_enable,
     output        mmu_mem_signed_read,
-    output [ 1:0] mmu_mem_data_width,
-    output [31:0] mmu_address,
+    output [ROM_ADDR_WIDTH-1:0] rom_address,
     output [31:0] mmu_data_in,
     output wire [31:0] uart_data
 );
@@ -69,13 +69,12 @@ module cpu (
     // TODO: Memory Access Control e Hazard Unit
 
     assign mmu_write_enable = 0;
-    assign mmu_read_enable = 1;
+    assign rom_read_enable = 1;
     assign mmu_mem_signed_read = 0;
-    assign mmu_mem_data_width = `MMU_WIDTH_WORD;
 
-    assign mmu_address = pc;
+    assign rom_address = pc[ROM_ADDR_WIDTH-1:2];
     assign mmu_data_in = 0; // TODO: serve apenas para leitura. Deve ser retirado/modificado para que CPU possa escrever na memória
-    assign ifid_ir = mmu_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
+    assign ifid_ir = rom_data_out; // TODO: Usar saída da cache L1i quando ela for implementada.
 
     always @(*) begin
         idex_reset = 0;
