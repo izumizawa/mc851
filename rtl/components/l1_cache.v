@@ -8,12 +8,12 @@ module l1_cache #(
     input  wire [31:0]  address,
     input  wire [31:0]  data_in,
     output wire [31:0]  data_out,
-    output wire         cache_ready,
+    output reg          cache_ready,
 
-    // Memory
+    // Memory Interface
     input  wire         mem_ready,
-    output wire         mem_fetch,
-    output wire         mem_write
+    output reg          mem_fetch,
+    output reg          mem_write
 );
     localparam OFFSET_WIDTH     = 2;
     localparam TAG_WIDTH        = 32 - (INDEX_WIDTH + OFFSET_WIDTH);
@@ -56,7 +56,7 @@ module l1_cache #(
 
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
-            ctrl_state = ACCEPT_REQUEST;
+            ctrl_state <= ACCEPT_REQUEST;
         end else begin
             case (ctrl_state)
                 ACCEPT_REQUEST: begin
