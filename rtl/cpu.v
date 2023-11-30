@@ -9,7 +9,7 @@ module cpu (
     output wire         immu_write_enable,
     output wire         immu_read_enable,
     output wire [ 1:0]  immu_data_width,
-    output wire [31:0]  immu_address,
+    output wire [31:0]  immu_virtual_address,
     output wire [31:0]  immu_data_in,
 
     input  wire         dmmu_mem_ready,
@@ -17,7 +17,7 @@ module cpu (
     output wire         dmmu_write_enable,
     output wire         dmmu_read_enable,
     output wire [ 1:0]  dmmu_data_width,
-    output wire [31:0]  dmmu_address,
+    output wire [31:0]  dmmu_virtual_address,
     output wire [31:0]  dmmu_data_in
 );
     // PC (Program Counter)
@@ -101,7 +101,7 @@ module cpu (
     assign immu_write_enable = 0;
     assign immu_read_enable = 1;
     assign immu_data_width = `MMU_WIDTH_WORD;
-    assign immu_address = pc;
+    assign immu_virtual_address = pc;
     assign immu_data_in = 0;
 
     always @(posedge clk, negedge reset_n) begin
@@ -443,7 +443,7 @@ module cpu (
     assign dmmu_write_enable = exmem_mem_write;
     assign dmmu_read_enable = exmem_mem_read;
     assign dmmu_data_width = exmem_mem_data_width;
-    assign dmmu_address = exmem_alu_out;
+    assign dmmu_virtual_address = exmem_alu_out;
     assign dmmu_data_in = exmem_data_read_2;
 
     reg [31:0] mem_data_read;

@@ -7,11 +7,10 @@ module mmu #(
     input  wire         reset_n,
     input  wire         write_enable,
     input  wire         read_enable,
-    input  wire         signed_read,
     input  wire [ 1:0]  data_width,
-    input  wire [31:0]  address,
+    input  wire [31:0]  virtual_address,
     input  wire [31:0]  data_in,
-    output reg          mem_ready,
+    output reg          mmu_ready,
     output wire [31:0]  data_out,
 
     // Interface do Controlador de Memória
@@ -19,7 +18,7 @@ module mmu #(
     input  wire [31:0]  imc_data_out,
     output wire         imc_write_enable,
     output wire         imc_read_enable,
-    output wire [31:0]  imc_address,
+    output wire [31:0]  imc_physical_address,
     output wire [31:0]  imc_data_in
 );
     //TODO: Instanciar Cache L1
@@ -44,7 +43,7 @@ module mmu #(
     wire        aligned_access;
 
     assign mem_low_word     = data_out_aux;
-    assign byte_offset      = address[1:0];
+    assign byte_offset      = virtual_address[1:0];
     assign aligned_access   = (byte_offset + data_width < 4) ? 1 : 0;
 
     // Recuperar dado da memória a partir de uma leitura (acesso alinhado) ou de duas leituras (desalinhado)
@@ -111,7 +110,7 @@ module mmu #(
     // Selecionar sinais de controle
     always @(*) begin
         data_in_aux = data_in;
-        address_aux = address;
+        address_aux = virtual_address;
         read_enable_aux = 0;
         write_enable_aux = 0;
 
@@ -130,7 +129,7 @@ module mmu #(
                 end
 
                 else if (write_enable && !aligned_access) begin
-                    address_aux = address + 4;
+                    address_aux = virtual_address + 4;
                     read_enable_aux = 1;
                     write_enable_aux = 0;
                 end
@@ -141,7 +140,7 @@ module mmu #(
                 end
 
                 else if (read_enable && !aligned_access) begin
-                    address_aux = address + 4;
+                    address_aux = virtual_address + 4;
                     read_enable_aux = 1;
                     write_enable_aux = 0;
                 end
@@ -167,37 +166,37 @@ module mmu #(
     // Realiza operações de leitura/escrita em múltiplos ciclos
     always @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
-            mem_ready <= 1;
+            mmu_ready <= 1;
             mem_high_word <= 0;
             current_state <= STATE_READY;
         end else begin
             case (current_state)
                 STATE_READY: begin
-                    mem_ready <= 1;
+                    mmu_ready <= 1;
                     current_state <= STATE_READY;
 
                     if (write_enable && aligned_access && (data_width != `MMU_WIDTH_WORD)) begin
-                        mem_ready <= 0;
+                        mmu_ready <= 0;
                         current_state <= STATE_ALIGNED_WRITE;
                     end
                     else if (write_enable && !aligned_access) begin
-                        mem_ready <= 0;
+                        mmu_ready <= 0;
                         current_state <= STATE_UNALIGNED_WRITE1;
                     end
                     else if (read_enable && !aligned_access) begin
                         mem_high_word <= data_out_aux;
-                        mem_ready <= 0;
+                        mmu_ready <= 0;
                         current_state <= STATE_UNALIGNED_READ;
                     end
                 end
 
                 STATE_ALIGNED_WRITE: begin
-                    mem_ready <= 1;
+                    mmu_ready <= 1;
                     current_state <= STATE_READY;
                 end
 
                 STATE_UNALIGNED_READ: begin
-                    mem_ready <= 1;
+                    mmu_ready <= 1;
                     current_state <= STATE_READY;
                 end
 
@@ -208,7 +207,7 @@ module mmu #(
                 // end TODO
 
                 default: begin
-                    mem_ready <= 0;
+                    mmu_ready <= 0;
                     current_state <= STATE_READY;
                 end
             endcase
