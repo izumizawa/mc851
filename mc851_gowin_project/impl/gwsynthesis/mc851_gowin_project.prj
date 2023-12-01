@@ -5,8 +5,10 @@
     <Device id="GW1NR-9C" package="QFN88P" speed="6" partNumber="GW1NR-LV9QN88PC6/I5"/>
     <FileList>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v" type="verilog"/>
+        <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\btn.v" type="verilog"/>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v" type="verilog"/>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v" type="verilog"/>
+        <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\led.v" type="verilog"/>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v" type="verilog"/>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v" type="verilog"/>
         <File path="C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\register_file.v" type="verilog"/>

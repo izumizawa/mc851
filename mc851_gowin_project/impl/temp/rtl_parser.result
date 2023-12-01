@@ -1,15 +1,41 @@
 [
  {
+  "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+  "InstLine" : 3,
+  "InstName" : "mmu",
+  "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+  "ModuleLine" : 3,
+  "ModuleName" : "mmu",
+  "SubInsts" : [
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+    "InstLine" : 28,
+    "InstName" : "rom_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/rom.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "rom"
+   },
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
+    "InstLine" : 47,
+    "InstName" : "ram_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/ram.v",
+    "ModuleLine" : 2,
+    "ModuleName" : "ram"
+   }
+  ]
+ },
+ {
   "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
-  "InstLine" : 1,
+  "InstLine" : 2,
   "InstName" : "soc",
   "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
-  "ModuleLine" : 1,
+  "ModuleLine" : 2,
   "ModuleName" : "soc",
   "SubInsts" : [
    {
     "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
-    "InstLine" : 20,
+    "InstLine" : 16,
     "InstName" : "cpu_inst",
     "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
     "ModuleLine" : 3,
@@ -17,7 +43,7 @@
     "SubInsts" : [
      {
       "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
-      "InstLine" : 150,
+      "InstLine" : 196,
       "InstName" : "regfile",
       "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/register_file.v",
       "ModuleLine" : 1,
@@ -25,7 +51,7 @@
      },
      {
       "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
-      "InstLine" : 331,
+      "InstLine" : 411,
       "InstName" : "alu_inst",
       "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/alu_module.v",
       "ModuleLine" : 3,
@@ -35,29 +61,35 @@
    },
    {
     "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
-    "InstLine" : 34,
-    "InstName" : "mmu_inst",
-    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
-    "ModuleLine" : 3,
-    "ModuleName" : "mmu",
-    "SubInsts" : [
-     {
-      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
-      "InstLine" : 28,
-      "InstName" : "rom_inst",
-      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/rom.v",
-      "ModuleLine" : 2,
-      "ModuleName" : "rom"
-     },
-     {
-      "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/mmu.v",
-      "InstLine" : 47,
-      "InstName" : "ram_inst",
-      "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/ram.v",
-      "ModuleLine" : 2,
-      "ModuleName" : "ram"
-     }
-    ]
+    "InstLine" : 44,
+    "InstName" : "rom_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/rom.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "rom"
+   },
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+    "InstLine" : 58,
+    "InstName" : "ram_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/ram.v",
+    "ModuleLine" : 2,
+    "ModuleName" : "ram"
+   },
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+    "InstLine" : 72,
+    "InstName" : "btn_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/btn.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "btn"
+   },
+   {
+    "InstFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/soc.v",
+    "InstLine" : 86,
+    "InstName" : "led_inst",
+    "ModuleFile" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/led.v",
+    "ModuleLine" : 1,
+    "ModuleName" : "led"
    }
   ]
  }

@@ -1,50 +1,99 @@
+
 module soc #(
-    parameter ROMFILE="multiply.hex"
+    parameter ROMFILE="counter_led.hex"
 ) (
     input clk,
-    input reset_n,
     input btn1,
+    input btn2,
+    output [5:0] led,
     output uart_tx
 );
-    wire         mmu_mem_ready;
-    wire [31:0]  mmu_data_out;
-    wire         mmu_write_enable;
-    wire         mmu_read_enable;
-    wire         mmu_mem_signed_read;
-    wire         mmu_signed_read;
-    wire [ 1:0]  mmu_mem_data_width;
-    wire [31:0]  mmu_address;
-    wire [31:0]  mmu_data_in;
-    wire [31:0] data;
 
-    cpu cpu_inst (
+    cpu #(
+        .ROM_ADDR_WIDTH(ROM_ADDR_WIDTH),
+        .RAM_ADDR_WIDTH(RAM_ADDR_WIDTH),
+        .BTN_ADDR_WIDTH(BTN_ADDR_WIDTH)
+    ) cpu_inst (
         .clk (clk),
-        .reset_n (reset_n),
-        .mmu_mem_ready(mmu_mem_ready),
-        .mmu_data_out(mmu_data_out),
-        .mmu_write_enable(mmu_write_enable),
-        .mmu_read_enable(mmu_read_enable),
-        .mmu_mem_signed_read(mmu_signed_read),
-        .mmu_mem_data_width(mmu_mem_data_width),
-        .mmu_address(mmu_address),
-        .mmu_data_in(mmu_data_in),
+        .reset_n (btn2),
+        .rom_read_enable(rom_read_enable),
+        .rom_address(rom_address),
+        .rom_data_out(rom_data_out),
+        .ram_write_enable(ram_write_enable),
+        .ram_data_in(ram_data_in),
+        .ram_read_enable(ram_read_enable),
+        .ram_address(ram_address),
+        .ram_data_out(ram_data_out),
+        .btn_read_enable(btn_read_enable),
+        .btn_address(btn_address),
+        .btn_data_out(btn_data_out),
+        .led_address(led_address),
+        .led_write_enable(led_write_enable),
+        .led_data_in(led_data_in),
         .uart_data(data)
     );
 
-    mmu #( .ROMFILE(ROMFILE)) mmu_inst (
-        .clk(clk),
-        .reset_n(reset_n),
-        .write_enable(mmu_write_enable),
-        .read_enable(mmu_read_enable),
-        .mem_signed_read(mmu_signed_read),
-        .mem_data_width(mmu_mem_data_width),
-        .address(mmu_address),
-        .data_in(mmu_data_in),
-        .data_out(mmu_data_out),
-        .mem_ready(mmu_mem_ready)
+    localparam ROM_ADDR_WIDTH = 8;
+    wire  [ROM_ADDR_WIDTH-1:0]  rom_address;
+    wire  rom_read_enable;
+    wire  [31:0]  rom_data_out;
+
+    rom #(
+        .ADDR_WIDTH(ROM_ADDR_WIDTH),
+        .ROMFILE(ROMFILE)
+    ) rom_inst (
+        .clk            (clk            ),
+        .read_enable    (rom_read_enable),
+        .address        (rom_address    ),
+        .data_out       (rom_data_out   )
     );
 
-// TEST
+    localparam RAM_ADDR_WIDTH = 8;
+    wire ram_write_enable;
+    wire ram_read_enable;
+    wire [RAM_ADDR_WIDTH-1:0] ram_address;
+    wire [31:0] ram_data_in;
+    wire [31:0] ram_data_out;
+
+    ram #( .ADDR_WIDTH(RAM_ADDR_WIDTH) ) ram_inst (
+        .clk            (clk                ),
+        .write_enable   (ram_write_enable   ),
+        .read_enable    (ram_read_enable    ),
+        .address        (ram_address        ),
+        .data_in        (ram_data_in        ),
+        .data_out       (ram_data_out       )
+    );
+
+    localparam BTN_ADDR_WIDTH = 8;
+    wire btn_read_enable;
+    wire  [BTN_ADDR_WIDTH-1:0] btn_address;
+    wire [31:0] btn_data_out;
+
+    btn #( .ADDR_WIDTH(BTN_ADDR_WIDTH) ) btn_inst (
+        .clk            (clk                ),
+        .btn1           (btn1               ),
+        .btn2           (btn2               ),
+        .read_enable    (btn_read_enable    ),
+        .address        (btn_address        ),
+        .data_out       (btn_data_out       )
+    );
+    
+    localparam LED_ADDR_WIDTH = 8;
+    wire led_write_enable;
+    wire  [LED_ADDR_WIDTH-1:0] led_address;
+    wire [31:0] led_data_in;
+
+    led #( .ADDR_WIDTH(LED_ADDR_WIDTH) ) led_inst (
+        .clk            (clk                ),
+        .write_enable   (led_write_enable   ),
+        .address        (led_address        ),
+        .data_in        (led_data_in        ),
+        .led            (led                )
+    );
+
+/* ------------ UART ------------- */
+
+// UART TEST
 reg [3:0] txState = 0;
 reg [24:0] txCounter = 0;
 reg [7:0] dataOut = 0;
@@ -52,6 +101,7 @@ reg [7:0] dataArray [0:3];
 reg txPinRegister = 1;
 reg [2:0] txBitNumber = 0;
 reg [1:0] txByteCounter = 0;
+wire [31:0] data;
 
 // assign data = 32'b11111001101110011001101110011111;
 assign uart_tx = txPinRegister;
@@ -62,7 +112,7 @@ localparam TX_STATE_WRITE = 2;
 localparam TX_STATE_STOP_BIT = 3;
 localparam TX_STATE_DEBOUNCE = 4;
 
-localparam DELAY_FRAMES = 234; // 27,000,000 (27Mhz) / 115200 Baud rate
+localparam DELAY_FRAMES = 234;
 
 always @(posedge clk) begin
     case (txState)
@@ -87,8 +137,9 @@ always @(posedge clk) begin
                 dataOut <= dataArray[txByteCounter];
                 txBitNumber <= 0;
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_WRITE: begin
             txPinRegister <= dataOut[txBitNumber];
@@ -100,8 +151,9 @@ always @(posedge clk) begin
                     txBitNumber <= txBitNumber + 1;
                 end
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_STOP_BIT: begin
             txPinRegister <= 1;
@@ -113,15 +165,17 @@ always @(posedge clk) begin
                     txState <= TX_STATE_START_BIT;
                 end
                 txCounter <= 0;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
         TX_STATE_DEBOUNCE: begin
             if (txCounter == 25'b11111111111111111111) begin
                 if (btn1 == 1)
                     txState <= TX_STATE_IDLE;
-            end else
+            end else begin
                 txCounter <= txCounter + 1;
+            end
         end
     endcase
 end

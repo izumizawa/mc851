@@ -6,11 +6,19 @@
    "Type" : "verilog"
   },
   {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/btn.v",
+   "Type" : "verilog"
+  },
+  {
    "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/cpu.v",
    "Type" : "verilog"
   },
   {
    "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/define.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "C:/Users/Guilherme/Desktop/faculdade/mc851/mc851_gowin/mc851_gowin_project/src/led.v",
    "Type" : "verilog"
   },
   {

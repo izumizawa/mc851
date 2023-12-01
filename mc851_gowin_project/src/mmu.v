@@ -1,7 +1,7 @@
 `include "define.v"
 
 module mmu #(
-    parameter ROMFILE="multiply.hex"
+    parameter ROMFILE="counter_led.hex"
 ) (
     input clk, reset_n,
     input write_enable,

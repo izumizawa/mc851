@@ -3,10 +3,12 @@ Running parser ...
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v'
 Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":1)
 Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":1)
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\btn.v'
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v'
 Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":1)
 Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":1)
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'
+Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\led.v'
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v'
 Analyzing included file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\define.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":1)
 Back to file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":1)
@@ -15,21 +17,52 @@ Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\m
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\register_file.v'
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v'
 Analyzing Verilog file 'C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v'
-Compiling module 'soc'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":1)
+Undeclared symbol 'rom_read_enable', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":19)
+Undeclared symbol 'rom_address', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":20)
+Undeclared symbol 'rom_data_out', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":21)
+Undeclared symbol 'ram_write_enable', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":22)
+Undeclared symbol 'ram_data_in', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":23)
+Undeclared symbol 'ram_read_enable', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":24)
+Undeclared symbol 'ram_address', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":25)
+Undeclared symbol 'ram_data_out', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":26)
+Undeclared symbol 'btn_read_enable', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":27)
+Undeclared symbol 'btn_address', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":28)
+Undeclared symbol 'btn_data_out', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":29)
+Undeclared symbol 'led_address', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":30)
+Undeclared symbol 'led_write_enable', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":31)
+Undeclared symbol 'led_data_in', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":32)
+Undeclared symbol 'data', assumed default net type 'wire'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":33)
+WARN  (EX3638) : 'rom_address' is already implicitly declared on line 20("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":37)
+WARN  (EX3638) : 'rom_read_enable' is already implicitly declared on line 19("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":38)
+WARN  (EX3638) : 'rom_data_out' is already implicitly declared on line 21("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":39)
+WARN  (EX3638) : 'ram_write_enable' is already implicitly declared on line 22("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":52)
+WARN  (EX3638) : 'ram_read_enable' is already implicitly declared on line 24("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":53)
+WARN  (EX3638) : 'ram_address' is already implicitly declared on line 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":54)
+WARN  (EX3638) : 'ram_data_in' is already implicitly declared on line 23("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":55)
+WARN  (EX3638) : 'ram_data_out' is already implicitly declared on line 26("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":56)
+WARN  (EX3638) : 'btn_read_enable' is already implicitly declared on line 27("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":68)
+WARN  (EX3638) : 'btn_address' is already implicitly declared on line 28("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":69)
+WARN  (EX3638) : 'btn_data_out' is already implicitly declared on line 29("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":70)
+WARN  (EX3638) : 'led_write_enable' is already implicitly declared on line 31("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":82)
+WARN  (EX3638) : 'led_address' is already implicitly declared on line 30("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":83)
+WARN  (EX3638) : 'led_data_in' is already implicitly declared on line 32("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":84)
+WARN  (EX3638) : 'data' is already implicitly declared on line 33("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":104)
+Compiling module 'soc'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":2)
 Compiling module 'cpu'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\cpu.v":3)
 Compiling module 'register_file'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\register_file.v":1)
 Compiling module 'alu_module'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\alu_module.v":3)
-Compiling module 'mmu'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":3)
-Compiling module 'rom(ADDR_WIDTH=8)'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":2)
-Extracting RAM for identifier 'mem'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":12)
+Compiling module 'rom'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":1)
+Extracting RAM for identifier 'mem'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\rom.v":11)
 Compiling module 'ram'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v":2)
 Extracting RAM for identifier 'mem'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\ram.v":13)
-WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":91)
-WARN  (EX3791) : Expression size 4 truncated to fit in target size 3("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":100)
-WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":104)
-WARN  (EX3791) : Expression size 3 truncated to fit in target size 2("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":112)
-WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":117)
-WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":124)
+Compiling module 'btn'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\btn.v":1)
+Compiling module 'led'("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\led.v":1)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":141)
+WARN  (EX3791) : Expression size 4 truncated to fit in target size 3("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":151)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":155)
+WARN  (EX3791) : Expression size 3 truncated to fit in target size 2("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":164)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":169)
+WARN  (EX3791) : Expression size 26 truncated to fit in target size 25("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\soc.v":177)
 NOTE  (EX0101) : Current top module is "soc"
 [5%] Running netlist conversion ...
 Running device independent optimization ...
@@ -47,7 +80,6 @@ Running technical mapping ...
 [75%] Tech-Mapping Phase 2 completed
 [80%] Tech-Mapping Phase 3 completed
 [90%] Tech-Mapping Phase 4 completed
-WARN  (NL0002) : The module "ram" instantiated to "ram_inst" is swept in optimizing("C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\src\mmu.v":54)
 [95%] Generate netlist file "C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\gwsynthesis\mc851_gowin_project.vg" completed
 [100%] Generate report file "C:\Users\Guilherme\Desktop\faculdade\mc851\mc851_gowin\mc851_gowin_project\impl\gwsynthesis\mc851_gowin_project_syn.rpt.html" completed
 GowinSynthesis finish

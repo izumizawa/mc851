@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Module name="soc" Register="74" Lut="117">
- <SubModule name="cpu_inst" Register="306" Alu="51" Lut="980">
+<Module name="soc" Register="74" Lut="126">
+ <SubModule name="cpu_inst" Register="389" Alu="116" Lut="1222">
   <SubModule name="regfile" Register="32" Alu="8" Lut="5" Ssram="32"/>
-  <SubModule name="alu_inst" Alu="32" Lut="119"/>
+  <SubModule name="alu_inst" Alu="32" Lut="120"/>
  </SubModule>
- <SubModule name="mmu_inst" Register="25" Lut="64">
-  <SubModule name="rom_inst" Lut="3" Bsram="1"/>
- </SubModule>
+ <SubModule name="rom_inst" Bsram="1"/>
+ <SubModule name="ram_inst" Register="1" Lut="8" Bsram="1"/>
+ <SubModule name="btn_inst" Register="2" Lut="3"/>
+ <SubModule name="led_inst" Register="6" Lut="6"/>
 </Module>

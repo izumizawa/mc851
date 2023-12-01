@@ -6,14 +6,16 @@
     <Device name="GW1NR-9C" pn="GW1NR-LV9QN88PC6/I5">gw1nr9c-004</Device>
     <FileList>
         <File path="src/alu_module.v" type="file.verilog" enable="1"/>
+        <File path="src/btn.v" type="file.verilog" enable="1"/>
         <File path="src/cpu.v" type="file.verilog" enable="1"/>
         <File path="src/define.v" type="file.verilog" enable="1"/>
+        <File path="src/led.v" type="file.verilog" enable="1"/>
         <File path="src/mmu.v" type="file.verilog" enable="1"/>
         <File path="src/ram.v" type="file.verilog" enable="1"/>
         <File path="src/register_file.v" type="file.verilog" enable="1"/>
         <File path="src/rom.v" type="file.verilog" enable="1"/>
         <File path="src/soc.v" type="file.verilog" enable="1"/>
         <File path="src/mc851_gowin_project.cst" type="file.cst" enable="1"/>
-        <File path="src/multiply.hex" type="file.other" enable="1"/>
+        <File path="src/counter_led.hex" type="file.other" enable="1"/>
     </FileList>
 </Project>
