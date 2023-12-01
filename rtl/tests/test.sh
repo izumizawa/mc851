@@ -133,6 +133,10 @@ iverilog -I ../ -o instructions/sub.vvp instructions/sub_tb.v ../soc.v ../cpu.v 
 vvp ./instructions/sub.vvp
 echo ""
 
+iverilog -I ../ -o instructions/sw.vvp instructions/sw_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./instructions/sw.vvp
+echo ""
+
 iverilog -I ../ -o instructions/xor.vvp instructions/xor_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
 vvp ./instructions/xor.vvp
 echo ""

@@ -8,31 +8,28 @@ module soc #(
     output [5:0] led,
     output uart_tx
 );
-    wire         mmu_write_enable;
-    wire         mmu_mem_signed_read;
-    wire         mmu_signed_read;
-    wire [31:0]  mmu_data_in;
-
-    localparam ROM_ADDR_WIDTH = 8;
-    wire [ROM_ADDR_WIDTH-1:0]  rom_address;
-    wire         rom_read_enable;
-    wire [31:0]  rom_data_out;
-
 
     cpu #(
-        .ROM_ADDR_WIDTH(ROM_ADDR_WIDTH)
+        .ROM_ADDR_WIDTH(ROM_ADDR_WIDTH),
+        .RAM_ADDR_WIDTH(RAM_ADDR_WIDTH)
     ) cpu_inst (
         .clk (clk),
         .reset_n (btn2),
-        .rom_data_out(rom_data_out),
-        .mmu_write_enable(mmu_write_enable),
         .rom_read_enable(rom_read_enable),
-        .mmu_mem_signed_read(mmu_signed_read),
         .rom_address(rom_address),
-        .mmu_data_in(mmu_data_in),
+        .rom_data_out(rom_data_out),
+        .ram_write_enable(ram_write_enable),
+        .ram_data_in(ram_data_in),
+        .ram_read_enable(ram_read_enable),
+        .ram_address(ram_address),
+        .ram_data_out(ram_data_out),
         .uart_data(data)
     );
 
+    localparam ROM_ADDR_WIDTH = 8;
+    wire  [ROM_ADDR_WIDTH-1:0]  rom_address;
+    wire  rom_read_enable;
+    wire  [31:0]  rom_data_out;
 
     rom #(
         .ADDR_WIDTH(ROM_ADDR_WIDTH),
@@ -42,6 +39,22 @@ module soc #(
         .read_enable    (rom_read_enable),
         .address        (rom_address    ),
         .data_out       (rom_data_out   )
+    );
+
+    localparam RAM_ADDR_WIDTH = 8;
+    wire ram_write_enable;
+    wire ram_read_enable;
+    wire [RAM_ADDR_WIDTH-1:0] ram_address;
+    wire [31:0] ram_data_in;
+    wire [31:0] ram_data_out;
+
+    ram #( .ADDR_WIDTH(RAM_ADDR_WIDTH) ) ram_inst (
+        .clk            (clk                ),
+        .write_enable   (ram_write_enable   ),
+        .read_enable    (ram_read_enable    ),
+        .address        (ram_address        ),
+        .data_in        (ram_data_in        ),
+        .data_out       (ram_data_out       )
     );
 
 /* ------------ UART ------------- */
