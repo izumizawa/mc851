@@ -42,6 +42,11 @@ module mmu #(
     reg  [31:0] data_out_masked;
     wire        aligned_access;
 
+    //TODO: Tradução de endereços virtuais
+
+    //TODO: Quando esse módulo virar uma MMU de verdade, as flags de leitura/escrita/execução/atomic/cache mode
+    // deveriam ser configuráveis pelo Sistema Operacional.
+
     assign mem_low_word     = data_out_aux;
     assign byte_offset      = virtual_address[1:0];
     assign aligned_access   = (byte_offset + data_width < 4) ? 1 : 0;
