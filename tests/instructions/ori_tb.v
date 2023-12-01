@@ -19,10 +19,10 @@ module ori_tb();
         $write("  test_ori: ");
 
         #10; // wait for ori to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'hFFFFFFFF)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'hFFFFFFFF)
             $display(" passed!");
         else
-            $error("    x5 should be 32'hFFFFFFFF, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'hFFFFFFFF, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
 
         #8;
     end

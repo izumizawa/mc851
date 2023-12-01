@@ -19,10 +19,10 @@ module or_tb();
         $write("  test_or: ");
 
         #14; // wait for or to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h0000002F)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h0000002F)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h0000002F, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h0000002F, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

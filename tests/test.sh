@@ -4,12 +4,12 @@ SOC_MODULES=\
 "${PROJECT_RTL_DIR}/soc.v \
 ${PROJECT_RTL_DIR}/cpu.v \
 ${PROJECT_RTL_DIR}/mmu.v \
+${PROJECT_RTL_DIR}/imc.v \
 ${PROJECT_RTL_DIR}/components/alu_module.v \
 ${PROJECT_RTL_DIR}/components/register_file.v \
 ${PROJECT_RTL_DIR}/components/ram.v \
 ${PROJECT_RTL_DIR}/components/rom.v \
-${PROJECT_RTL_DIR}/components/l1_data_cache.v \
-${PROJECT_RTL_DIR}/components/l1_instruction_cache.v"
+${PROJECT_RTL_DIR}/components/l1_cache.v"
 
 
 echo "===============================Testing modules============================="

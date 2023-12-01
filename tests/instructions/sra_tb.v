@@ -19,10 +19,10 @@ module sra_tb();
         $write("  test_sra: ");
 
         #14; // wait for sra to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000004)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h00000004)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h00000004, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000004, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

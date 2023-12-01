@@ -19,17 +19,17 @@ module slti_tb();
         $write("  test_slti: ");
 
         #10; // wait for slti to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h00000001)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'h00000001)
             $display("\n    passed first scenario!");
         else
-            $error("    x5 should be 32'h00000001, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h00000001, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
 
         #10;
 
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h00000000)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'h00000000)
             $display("\n    passed all scenarios!");
         else
-            $error("    x5 should be 32'h00000000, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h00000000, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
         #8;
     end
     endtask

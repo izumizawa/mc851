@@ -19,10 +19,10 @@ module srai_tb();
         $write("  test_srai: ");
 
         #12; // wait for addi and srai to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'hFFFFFFFE && soc_inst.cpu_inst.regfile.registers[6] == 32'hFFFFFFFF)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'hFFFFFFFE && soc_inst.cpu_core0.regfile.registers[6] == 32'hFFFFFFFF)
             $display(" passed!");
         else
-            $error("    x6 should be 32'h00000001, but is %h", soc_inst.cpu_inst.regfile.registers[6]);
+            $error("    x6 should be 32'h00000001, but is %h", soc_inst.cpu_core0.regfile.registers[6]);
 
         #8;
     end

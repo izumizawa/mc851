@@ -19,10 +19,10 @@ module beq_tb();
         $write("  test_beq: ");
 
         #10; // wait for beq to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2 && soc_inst.cpu_inst.pc == 32'h0)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'h2 && soc_inst.cpu_core0.pc == 32'h0)
             $display(" passed!");
         else
-            $error("    pc should be 32'h0, but is %h", soc_inst.cpu_inst.pc);
+            $error("    pc should be 32'h0, but is %h", soc_inst.cpu_core0.pc);
 
         #8;
     end

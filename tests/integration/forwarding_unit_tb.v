@@ -19,10 +19,10 @@ module forwarding_unit_tb();
         $write("  test_forwarding_unit: ");
 
         #12; // wait for forwarding_unit to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h4)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'h4)
             $display(" passed!");
         else
-            $error("    x5 should be 32'h4, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h4, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
 
         #8;
     end

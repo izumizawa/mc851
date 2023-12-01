@@ -19,10 +19,10 @@ module and_tb();
         $write("  test_and: ");
 
         #14; // wait for and to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000022)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h00000022)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h00000022, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000022, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

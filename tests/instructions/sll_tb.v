@@ -19,10 +19,10 @@ module sll_tb();
         $write("  test_sll: ");
 
         #14; // wait for sll to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h000004C0)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h000004C0)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h000004C0, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h000004C0, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

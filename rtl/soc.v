@@ -2,6 +2,7 @@ module soc #(
     parameter ROMFILE="../src/memdump/addi.mem"
 ) (
     input  wire clk,
+    input  wire reset_n,
 
     // Peripherals
     input  wire button_1,
@@ -9,9 +10,6 @@ module soc #(
     input  wire uart_rx,
     output wire uart_tx
 );
-    wire reset_n;
-    assign reset_n = 1;
-
 
     // Instruction MMU
     wire        immu_mem_ready;
@@ -59,7 +57,7 @@ module soc #(
      * ROM (Read-Only Memory)
      */
     localparam ROM_ADDR_WIDTH = 8;
-    reg rom_read_enable;
+    wire rom_read_enable;
     wire  [ROM_ADDR_WIDTH-1:0] rom_address;
     wire [31:0] rom_data_out;
 
@@ -81,8 +79,8 @@ module soc #(
      * RAM (Random Access Memory)
      */
     localparam RAM_ADDR_WIDTH = 8;
-    reg ram_write_enable;
-    reg ram_read_enable;
+    wire ram_write_enable;
+    wire ram_read_enable;
     wire  [RAM_ADDR_WIDTH-1:0] ram_address;
     wire  [31:0] ram_data_in;
     wire [31:0] ram_data_out;

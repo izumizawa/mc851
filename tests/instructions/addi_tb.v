@@ -20,10 +20,10 @@ module addi_tb();
         $write("  test_addi: ");
 
         #10; // wait for addi to complete
-        if(soc_inst.cpu_inst.regfile.registers[5] == 32'h2)
+        if(soc_inst.cpu_core0.regfile.registers[5] == 32'h2)
             $display(" passed!");
         else
-            $error("    x5 should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x5 should be 32'h2, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
 
         #8;
     end

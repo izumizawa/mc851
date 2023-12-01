@@ -19,10 +19,10 @@ module xor_tb();
         $write("  test_xor: ");
 
         #14; // wait for xor to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h0000000D)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h0000000D)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h0000000D, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h0000000D, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

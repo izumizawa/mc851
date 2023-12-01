@@ -19,10 +19,10 @@ module slt_tb();
         $write("  test_slt: ");
 
         #14; // wait for slt to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000001)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h00000001)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h00000001, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000001, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

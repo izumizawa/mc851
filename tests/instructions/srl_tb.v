@@ -19,10 +19,10 @@ module srl_tb();
         $write("  test_srl: ");
 
         #14; // wait for srl to complete
-        if(soc_inst.cpu_inst.regfile.registers[7] == 32'h00000009)
+        if(soc_inst.cpu_core0.regfile.registers[7] == 32'h00000009)
             $display(" passed!");
         else
-            $error("    x7 should be 32'h00000009, but is %h", soc_inst.cpu_inst.regfile.registers[7]);
+            $error("    x7 should be 32'h00000009, but is %h", soc_inst.cpu_core0.regfile.registers[7]);
 
         #8;
     end

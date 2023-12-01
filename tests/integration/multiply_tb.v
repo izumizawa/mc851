@@ -19,10 +19,10 @@ module multiply_tb();
         $write("  test_multiply: ");
 
         #36 // wait for multiply to complete
-        if(soc_inst.cpu_inst.regfile.registers[6] == 32'h4)
+        if(soc_inst.cpu_core0.regfile.registers[6] == 32'h4)
             $display(" passed!");
         else
-            $error("    x6 should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[5]);
+            $error("    x6 should be 32'h2, but is %h", soc_inst.cpu_core0.regfile.registers[5]);
 
         #8;
     end

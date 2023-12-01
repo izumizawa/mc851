@@ -19,8 +19,8 @@ module imc (
     // TODO: Implementar um barramento de memória de verdade em vez de ter uma interface pra cada dispositivo
     input  wire [31:0]  mem_rom_data_out,
     input  wire [31:0]  mem_ram_data_out,
-    output wire [31:0]  mem_address,
-    output wire [31:0]  mem_data_in,
+    output reg [31:0]   mem_address,
+    output reg [31:0]   mem_data_in,
     output reg          mem_rom_read_enable,
     output reg          mem_ram_write_enable,
     output reg          mem_ram_read_enable
