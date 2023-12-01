@@ -23,7 +23,7 @@ module sw_tb();
         if(soc_inst.cpu_inst.regfile.registers[6] == 32'h0A)
             $display(" passed!");
         else
-            $error("    x5 should be 32'h2, but is %h", soc_inst.cpu_inst.regfile.registers[6]);
+            $error("    x5 should be 32'h0A, but is %h", soc_inst.cpu_inst.regfile.registers[6]);
 
         #8;
     end

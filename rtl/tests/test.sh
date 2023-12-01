@@ -35,6 +35,10 @@ iverilog -I ../ -o integration/multiply.vvp integration/multiply_tb.v ../soc.v .
 vvp ./integration/multiply.vvp
 echo ""
 
+iverilog -I ../ -o integration/btn_buffer.vvp integration/btn_buffer_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v
+vvp ./integration/btn_buffer.vvp
+echo ""
+
 echo "===============================Testing instructions========================="
 
 iverilog -I ../ -o instructions/add.vvp instructions/add_tb.v ../soc.v ../cpu.v ../components/alu_module.v ../components/register_file.v ../components/ram.v ../components/rom.v ../components/btn.v ../components/led.v

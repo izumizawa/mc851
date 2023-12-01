@@ -23,6 +23,9 @@ module soc #(
         .ram_read_enable(ram_read_enable),
         .ram_address(ram_address),
         .ram_data_out(ram_data_out),
+        .btn_read_enable(btn_read_enable),
+        .btn_address(btn_address),
+        .btn_data_out(btn_data_out),
         .uart_data(data)
     );
 
@@ -56,6 +59,21 @@ module soc #(
         .data_in        (ram_data_in        ),
         .data_out       (ram_data_out       )
     );
+
+    localparam BTN_ADDR_WIDTH = 8;
+    wire btn_read_enable;
+    wire  [BTN_ADDR_WIDTH-1:0] btn_address;
+    wire [31:0] btn_data_out;
+
+    btn #( .ADDR_WIDTH(BTN_ADDR_WIDTH) ) btn_inst (
+        .clk            (clk                ),
+        .btn1           (btn1               ),
+        .btn2           (btn2               ),
+        .read_enable    (btn_read_enable    ),
+        .address        (btn_address        ),
+        .data_out       (btn_data_out       )
+    );
+    // -------------------------------------------------------------------------
 
 /* ------------ UART ------------- */
 

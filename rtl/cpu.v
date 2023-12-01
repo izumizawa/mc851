@@ -2,18 +2,22 @@
 
 module cpu #(
     parameter ROM_ADDR_WIDTH = 8,  // 256×4B = 1 KiB
-    parameter RAM_ADDR_WIDTH = 8  // 256×4B = 1 KiB
+    parameter RAM_ADDR_WIDTH = 8,  // 256×4B = 1 KiB
+    parameter BTN_ADDR_WIDTH = 8
 ) (
     input         clk,
     input         reset_n,
     input [31:0]  rom_data_out,
     input [31:0]  ram_data_out,
+    input [31:0]  btn_data_out,
     output [ROM_ADDR_WIDTH-1:0] rom_address,
     output        rom_read_enable,
     output        ram_read_enable,
     output [31:0] ram_data_in,
     output [RAM_ADDR_WIDTH-1:0] ram_address,
     output        ram_write_enable,
+    output        btn_read_enable,
+    output [BTN_ADDR_WIDTH-1:0] btn_address,
     output wire [31:0] uart_data
 );
 
@@ -490,10 +494,18 @@ module cpu #(
     /***************************************************************************
      * Memory access (MEM) stage
      **************************************************************************/
-    assign ram_address = exmem_alu_out;
+    localparam RAM_SELECT   = 22'b00;
+    localparam RAM_RANGE    = 10;
+    localparam BTN_SELECT   = 22'b01;
+    localparam BTN_RANGE    = 10;
+
+    assign ram_address = exmem_alu_out[RAM_ADDR_WIDTH-1:0];
     assign ram_data_in = exmem_mem_data_in;
-    assign ram_read_enable = exmem_mem_read;
-    assign ram_write_enable = exmem_mem_write;
+    assign ram_read_enable = (exmem_alu_out[31:RAM_RANGE] == RAM_SELECT) ? exmem_mem_read : 0;
+    assign ram_write_enable = (exmem_alu_out[31:RAM_RANGE] == RAM_SELECT) ? exmem_mem_write : 0;
+
+    assign btn_address = exmem_alu_out[BTN_ADDR_WIDTH-1:0];
+    assign btn_read_enable = (exmem_alu_out[31:BTN_RANGE] == BTN_SELECT) ? exmem_mem_read : 0;
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin
@@ -511,7 +523,11 @@ module cpu #(
             memwb_alu_out <= 0;
 
             if (exmem_mem_read) begin
-                memwb_mem_data_read <= ram_data_out;
+                if(btn_read_enable) begin
+                    memwb_mem_data_read <= btn_data_out;
+                end else begin
+                    memwb_mem_data_read <= ram_data_out;
+                end
             end else begin
                 memwb_alu_out <= exmem_alu_out;
             end
