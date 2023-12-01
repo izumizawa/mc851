@@ -11,7 +11,8 @@ module soc #(
 
     cpu #(
         .ROM_ADDR_WIDTH(ROM_ADDR_WIDTH),
-        .RAM_ADDR_WIDTH(RAM_ADDR_WIDTH)
+        .RAM_ADDR_WIDTH(RAM_ADDR_WIDTH),
+        .BTN_ADDR_WIDTH(BTN_ADDR_WIDTH)
     ) cpu_inst (
         .clk (clk),
         .reset_n (btn2),
@@ -26,6 +27,9 @@ module soc #(
         .btn_read_enable(btn_read_enable),
         .btn_address(btn_address),
         .btn_data_out(btn_data_out),
+        .led_address(led_address),
+        .led_write_enable(led_write_enable),
+        .led_data_in(led_data_in),
         .uart_data(data)
     );
 
@@ -73,7 +77,19 @@ module soc #(
         .address        (btn_address        ),
         .data_out       (btn_data_out       )
     );
-    // -------------------------------------------------------------------------
+    
+    localparam LED_ADDR_WIDTH = 8;
+    wire led_write_enable;
+    wire  [LED_ADDR_WIDTH-1:0] led_address;
+    wire [31:0] led_data_in;
+
+    led #( .ADDR_WIDTH(LED_ADDR_WIDTH) ) led_inst (
+        .clk            (clk                ),
+        .write_enable   (led_write_enable   ),
+        .address        (led_address        ),
+        .data_in        (led_data_in        ),
+        .led            (led                )
+    );
 
 /* ------------ UART ------------- */
 

@@ -3,7 +3,8 @@
 module cpu #(
     parameter ROM_ADDR_WIDTH = 8,  // 256×4B = 1 KiB
     parameter RAM_ADDR_WIDTH = 8,  // 256×4B = 1 KiB
-    parameter BTN_ADDR_WIDTH = 8
+    parameter BTN_ADDR_WIDTH = 8,
+    parameter LED_ADDR_WIDTH = 8
 ) (
     input         clk,
     input         reset_n,
@@ -18,6 +19,9 @@ module cpu #(
     output        ram_write_enable,
     output        btn_read_enable,
     output [BTN_ADDR_WIDTH-1:0] btn_address,
+    output [LED_ADDR_WIDTH-1:0] led_address,
+    output        led_write_enable,
+    output [31:0] led_data_in,
     output wire [31:0] uart_data
 );
 
@@ -494,10 +498,12 @@ module cpu #(
     /***************************************************************************
      * Memory access (MEM) stage
      **************************************************************************/
-    localparam RAM_SELECT   = 22'b00;
-    localparam RAM_RANGE    = 10;
-    localparam BTN_SELECT   = 22'b01;
-    localparam BTN_RANGE    = 10;
+    localparam RAM_SELECT   = 23'b00;
+    localparam RAM_RANGE    = 9;
+    localparam BTN_SELECT   = 23'b01;
+    localparam BTN_RANGE    = 9;
+    localparam LED_SELECT   = 23'b10;
+    localparam LED_RANGE    = 9;
 
     assign ram_address = exmem_alu_out[RAM_ADDR_WIDTH-1:0];
     assign ram_data_in = exmem_mem_data_in;
@@ -506,6 +512,10 @@ module cpu #(
 
     assign btn_address = exmem_alu_out[BTN_ADDR_WIDTH-1:0];
     assign btn_read_enable = (exmem_alu_out[31:BTN_RANGE] == BTN_SELECT) ? exmem_mem_read : 0;
+
+    assign led_address = exmem_alu_out[LED_ADDR_WIDTH-1:0];
+    assign led_data_in = exmem_mem_data_in;
+    assign led_write_enable = (exmem_alu_out[31:LED_RANGE] == LED_SELECT) ? exmem_mem_write : 0;
 
     always @(posedge clk, negedge reset_n) begin
         if(!reset_n) begin

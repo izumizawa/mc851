@@ -12,7 +12,7 @@ module led #(
 
     always @(posedge clk) begin
         if (write_enable) begin
-            led_data_out <= data_in[5:0];
+            led_data_out <= ~data_in[5:0];
         end
 
     end
