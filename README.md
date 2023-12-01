@@ -1,5 +1,7 @@
 # MC851 - Projeto em Computação I
-Implementação de uma CPU reduzida com arquitetura em RISC-V em Verilog 2005.
+Implementação de uma CPU reduzida com arquitetura em RISC-V em Verilog 2005. Foram implementados dois chips: o RISC-6™ A-500, com a RV32I (apenas com load/store de words), memória integrada e periféricos, demonstrado na demo presencialmente, e, o RISC-6™ A-1000, chip incompleto com a implementação com um novo design de unidade de memória  com caches L1.  A  branch `plan-b` contém o código relativo ao chip RISC-6™ A-500 completo, e a branch `memory-control` contém o código ao chip incompleto RISC-6™ A-1000.
+
+Para execução da demo demonstrada em sala de aula, deve ser aberto o projeto contido na pasta `mc851_gowin_project/`, na branch `plan-b`,  no Gowin IDE.
 
 ## Integrantes
 
@@ -15,6 +17,8 @@ As entregas requeridas pelo programa da disciplina estão na pasta `docs`, os re
 
 ## Testes
 Para implementar testes, utilize o `iverilog` para compilar seus módulos junto com seu _testbench_ e depois o execute-o. Adicione seu script de teste no arquivo `rtl/tests/test.sh` para que seja adicionado a suite de testes do sistema.
+
+Para rodar os testes, deve se estar nas pasta `rtl/tests`, estar com o `iverilog` instalado, e rodar o comando `bash test.sh`.
 
 ## Assembly/RISC-V
 Programas para arquitetura RISC-V ficam armazenados na pasta `src/`. Para fazer o assemble/disassemble de um programa em RISC-V, utilize os scripts `.sh` da pasta `src`. Por exemplo:
